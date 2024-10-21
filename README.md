@@ -11,6 +11,16 @@ Research Question: Are open-source software (OSS) projects truly free from vulne
 2. Isha Joglekar ([@ishajoglekar](https://github.com/ishajoglekar))
 3. Ujjawal K. Panchal ([@Ujjawal-K-Panchal](https://github.com/Ujjawal-K-Panchal))
 
+## Setup:
+1. Make a `.env` file (ignored by git). Put in: `TOKEN='<your-github-pat>'`, `BASE_URL='https://api.github.com/search/code'`.
+2. Install requirements inside virtual environment:
+```python
+python -m pip install --upgrade pip
+python -m pip install virtualenv
+python -m venv venv4chairdemon
+source venv4chairdemon/bin/activate
+python -m pip install -r requirements.txt
+```
 
 ## Files:
 
