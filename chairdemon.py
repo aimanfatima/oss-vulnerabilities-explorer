@@ -38,7 +38,7 @@ def search_github_code(query, language='javascript', per_page=10):
         return None
 
 # Function to check for XSS patterns
-def find_potential_xss_vulnerabilities():
+def chairdemon_search_XSS():
     # Common XSS-prone patterns in JavaScript
     patterns = [
         'innerHTML',
@@ -48,7 +48,7 @@ def find_potential_xss_vulnerabilities():
         'setTimeout(',
         'setInterval(',
     ]
-    
+    chairdemon_findings = []
     for pattern in patterns:
         print(f"Searching for potential XSS vulnerabilities using pattern: {pattern}")
         result = search_github_code(query=pattern)
@@ -59,7 +59,16 @@ def find_potential_xss_vulnerabilities():
                 file_name = item['name']
                 file_url = item['html_url']
                 print(f"- Repo: {repo_name}, File: {file_name}, URL: {file_url}")
+                chairdemon_findings.append({"repo": repo_name, "file": file_name, "url": file_url})
         print("\n" + "="*50 + "\n")
+    return chairdemon_findings
+
+def chairdemon_report_findings(findings: list = [], vulname: str = "XSS"):
+    print(f"Chair Demon Found following {vulname} vulnerabilities:\n===")
+    for i, finding in enumerate(findings):
+        print(f"{i}. Repo: {finding['repo']}\n\tfile: {finding['file']}\n\turl: {finding['url']}")
+    return
 
 if __name__ == "__main__":
-    find_potential_xss_vulnerabilities()
+    findings = chairdemon_search_XSS()
+    chairdemon_report_findings(findings, "XSS")
