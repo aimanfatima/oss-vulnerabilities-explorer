@@ -15,13 +15,14 @@ import requests
 dotenv.load_dotenv()
 
 class Columbus:
-    def __init__(self, token=None, base_url=None, raw_base_url=None):
+    def __init__(self, token=None, base_url=None, raw_base_url=None, results_per_search = 10):
         """
         Initialize the Columbus class with the required configurations.
         """
         self.TOKEN = token or os.getenv('TOKEN')  # GitHub personal access token
         self.BASE_URL = base_url or os.getenv('BASE_URL')  # GitHub API base URL
         self.RAW_BASE_URL = raw_base_url or 'https://raw.githubusercontent.com/'  # Raw URL for file content
+        self.results_per_search = results_per_search
         self.HEADERS = {
             'Authorization': f'token {self.TOKEN}',
             'Accept': 'application/vnd.github.v3+json'
@@ -48,10 +49,10 @@ class Columbus:
         }
 
     # Function to search for code patterns on GitHub
-    def search_github_code(self, query, language='javascript', per_page=10):
+    def search_github_code(self, query, language='javascript'):
         params = {
             'q': f'{query} language:{language}',
-            'per_page': per_page,
+            'per_page': self.results_per_search,
         }
         response = requests.get(self.BASE_URL, headers=self.HEADERS, params=params)
         if response.status_code == 200:
@@ -154,7 +155,9 @@ class Columbus:
         print(f"Columbus found the following {vulname} vulnerabilities:\n===")
         for i, finding in enumerate(findings):
             #1. Write to file.
-            with open(f"findings/columbus/{finding['repo'].replace('/', '-')}-XSS.log", "wt") as file:
+            if not os.path.exists(f"findings/columbus/{vulname}/"):
+                os.makedirs(f"findings/columbus/{vulname}/")
+            with open(f"findings/columbus/{vulname}/{finding['repo'].replace('/', '-')}-XSS.log", "wt") as file:
                 file.write(f"{i+1}. Repo: {finding['repo']}\n")
                 file.write(f"\tFile: {finding['file']}\n")
                 file.write(f"\tURL: {finding['url']}\n")
