@@ -195,6 +195,11 @@ class Columbus:
             if not os.path.exists(f"findings/columbus/{vulnerability_type}/"):
                 os.makedirs(f"findings/columbus/{vulnerability_type}/")
 
+            # Skip if the file already exists
+            if os.path.exists(f"findings/columbus/{vulnerability_type}/{file_name}"):
+                print(f"Skipping {file_name} as it already exists.")
+                continue
+
             # Write to file
             with open(f"findings/columbus/{vulnerability_type}/{file_name}", "wt") as file:
                 file.write(f"{i+1}. Repo: {finding['repo']}\n")
