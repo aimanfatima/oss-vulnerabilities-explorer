@@ -1,5 +1,5 @@
 """
-Title: Sullivan the Explorer
+Title: columbus the Explorer
 
 Desc: Scan XSS Cross Site Scripting vulnerability across GitHub.
 
@@ -91,7 +91,7 @@ def inject_payload_into_snippet(code_snippet, pattern, payload="<script>alert(\"
         return code_snippet.replace(pattern, f"{pattern} /* {payload} */")
 
 # Function to check for XSS patterns
-def sullivan_search_XSS():
+def columbus_search_XSS():
     # XSS-prone patterns and attack details
     patterns = {
         'innerHTML': {
@@ -149,11 +149,11 @@ def sullivan_search_XSS():
         print("\n" + "="*50 + "\n")
     return chairdemon_findings
 
-def sullivan_report_findings(findings: list = [], vulname: str = "XSS"):
+def columbus_report_findings(findings: list = [], vulname: str = "XSS"):
     print(f"Chair Demon Found the following {vulname} vulnerabilities:\n===")
     for i, finding in enumerate(findings):
         #1. write to file.
-        with open(f"findings/sullivan/{finding['repo'].replace('/', '-')}-XSS.log", "wt") as file:
+        with open(f"findings/columbus/{finding['repo'].replace('/', '-')}-XSS.log", "wt") as file:
             file.write(f"{i+1}. Repo: {finding['repo']}\n")
             file.write(f"\tFile: {finding['file']}\n")
             file.write(f"\tURL: {finding['url']}\n")
@@ -178,5 +178,5 @@ def sullivan_report_findings(findings: list = [], vulname: str = "XSS"):
     return
 
 if __name__ == "__main__":
-    findings = sullivan_search_XSS()
-    sullivan_report_findings(findings, "XSS")
+    findings = columbus_search_XSS()
+    columbus_report_findings(findings, "XSS")
