@@ -15,7 +15,7 @@ import requests
 dotenv.load_dotenv()
 
 class Columbus:
-    def __init__(self, token=None, base_url=None, raw_base_url=None, results_per_search = 10):
+    def __init__(self, token=None, base_url=None, raw_base_url=None, results_per_search=10, language = 'javascript'):
         """
         Initialize the Columbus class with the required configurations.
         """
@@ -23,6 +23,7 @@ class Columbus:
         self.BASE_URL = base_url or os.getenv('BASE_URL')  # GitHub API base URL
         self.RAW_BASE_URL = raw_base_url or 'https://raw.githubusercontent.com/'  # Raw URL for file content
         self.results_per_search = results_per_search
+        self.language = 'javascript'
         self.HEADERS = {
             'Authorization': f'token {self.TOKEN}',
             'Accept': 'application/vnd.github.v3+json'
@@ -49,9 +50,9 @@ class Columbus:
         }
 
     # Function to search for code patterns on GitHub
-    def search_github_code(self, query, language='javascript'):
+    def search_github_code(self, query):
         params = {
-            'q': f'{query} language:{language}',
+            'q': f'{query} language:{self.language}',
             'per_page': self.results_per_search,
         }
         response = requests.get(self.BASE_URL, headers=self.HEADERS, params=params)
@@ -138,6 +139,7 @@ class Columbus:
                             f"4. When the browser renders this code, the malicious script executes, leading to an XSS attack."
                         ]
                         findings.append({
+                            "vulnerability": "XSS",
                             "repo": repo_name,
                             "file": file_name,
                             "url": file_url,
@@ -150,38 +152,91 @@ class Columbus:
             print("\n" + "="*50 + "\n")
         return findings
 
-    # Function to report the findings in logs and print
-    def report_findings(self, findings: list = [], vulname: str = "XSS"):
-        print(f"Columbus found the following {vulname} vulnerabilities:\n===")
+    # New function to search for .env file leaks
+    def search_env(self):
+        print(f"Searching for committed .env files in public repositories.")
+        query = 'extension:.env'
+        findings = []
+        
+        # Use the search_github_code function to search for .env files
+        result = self.search_github_code(query=query)
+        
+        if result:
+            print(f"Found {len(result['items'])} results for .env files")
+            for item in result['items']:
+                repo_name = item['repository']['full_name']
+                file_name = item['path']
+                file_url = item['html_url']
+                # Fetch the raw file content to analyze further
+                file_content = self.fetch_raw_file_content(repo_name, file_name)
+                if file_content:
+                    findings.append({
+                        "vulnerability": "env-leak",
+                        "repo": repo_name,
+                        "file": file_name,
+                        "url": file_url,
+                        "code_snippet": file_content
+                    })
+                print(f"- Repo: {repo_name}, File: {file_name}, URL: {file_url}")
+        else:
+            print("No results found or there was an error in the query.")
+        print("\n" + "="*50 + "\n")
+        
+        return findings
+
+    # Function to report findings for all vulnerabilities
+    def report_findings(self, findings: list = []):
+        print(f"Columbus found the following vulnerabilities:\n===")
         for i, finding in enumerate(findings):
-            #1. Write to file.
-            if not os.path.exists(f"findings/columbus/{vulname}/"):
-                os.makedirs(f"findings/columbus/{vulname}/")
-            with open(f"findings/columbus/{vulname}/{finding['repo'].replace('/', '-')}-XSS.log", "wt") as file:
+            vulnerability_type = finding['vulnerability']
+            file_name = f"{finding['repo'].replace('/', '-')}-{vulnerability_type}.log"
+
+            # Ensure the directory exists
+            if not os.path.exists(f"findings/columbus/{vulnerability_type}/"):
+                os.makedirs(f"findings/columbus/{vulnerability_type}/")
+
+            # Write to file
+            with open(f"findings/columbus/{vulnerability_type}/{file_name}", "wt") as file:
                 file.write(f"{i+1}. Repo: {finding['repo']}\n")
                 file.write(f"\tFile: {finding['file']}\n")
                 file.write(f"\tURL: {finding['url']}\n")
-                file.write(f"\tVulnerable Pattern: {finding['pattern']}\n")
-                file.write(f"\tAttack Description: {finding['description']}\n")
-                file.write(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}\n")
-                file.write(f"Step-by-Step Attack Scenario:\n")
-                for step in finding['attack_steps']:
-                    file.write(f"\t\t\t{step}\n")
+                if vulnerability_type == "XSS":
+                    file.write(f"\tVulnerable Pattern: {finding['pattern']}\n")
+                    file.write(f"\tAttack Description: {finding['description']}\n")
+                    file.write(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}\n")
+                    file.write(f"Step-by-Step Attack Scenario:\n")
+                    for step in finding['attack_steps']:
+                        file.write(f"\t\t\t{step}\n")
+                elif vulnerability_type == ".env Leak":
+                    file.write(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}\n")
 
-            #2. Print.
+            # Print to console
             print(f"{i+1}. Repo: {finding['repo']}")
-            print(f"\tFile: {finding['file']}")
-            print(f"\tURL: {finding['url']}")
-            print(f"\tVulnerable Pattern: {finding['pattern']}")
-            print(f"\tAttack Description: {finding['description']}")
-            print(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}")
-            print(f"\tStep-by-Step Attack Scenario:")
-            for step in finding['attack_steps']:
-                print(f"\t\t{step}")
+            # print(f"\tFile: {finding['file']}")
+            # print(f"\tURL: {finding['url']}")
+            if vulnerability_type == "XSS":
+                # print(f"\tVulnerable Pattern: {finding['pattern']}")
+                # print(f"\tAttack Description: {finding['description']}")
+                # print(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}")
+                # print(f"\tStep-by-Step Attack Scenario:")
+                # for step in finding['attack_steps']:
+                #     print(f"\t\t{step}")
+                ...
+            elif vulnerability_type == ".env Leak":
+                print(f"\tVulnerable Code Snippet:\n{finding['code_snippet']}")
             print("\n")
 
 # If the script is being run directly, execute the main search and reporting process
 if __name__ == "__main__":
     columbus = Columbus()
-    findings = columbus.search_XSS()
-    columbus.report_findings(findings, "XSS")
+    
+    # Search for XSS vulnerabilities
+    findings_XSS = columbus.search_XSS()
+    
+    # Search for .env file leaks
+    columbus.results_per_search = 60
+    findings_env = columbus.search_env()
+    
+    # Combine both findings and report them
+    all_findings = findings_XSS + findings_env
+    columbus.report_findings(all_findings)
