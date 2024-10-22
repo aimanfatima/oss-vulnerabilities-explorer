@@ -1,0 +1,44 @@
+29. Repo: rbkreisberg/visquick
+	File: vq.js
+	URL: https://github.com/rbkreisberg/visquick/blob/31771a1b1611e05f0a93e7d2c5b10de6fe63fe53/vq.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+  	    valueL += element.scrollLeft || 0;
+      } while (element = element.parentNode);
+    return {left : valueL, top: valueT};
+  };
+
+vq.utils.VisUtils.outerHTML = function(node){
+        // if IE, Chrome take the internal method otherwise build one
+        return node.outerHTML || (
+                                 function(n){
+                                     var div = document.createElement('div'), h;
+                                     div.appendChild( n.cloneNode(true) );
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  	    valueL += element.scrollLeft || 0;
+      } while (element = element.parentNode);
+    return {left : valueL, top: valueT};
+  };
+
+vq.utils.VisUtils.outerHTML = function(node){
+        // if IE, Chrome take the internal method otherwise build one
+        return node.outerHTML || (
+                                 function(n){
+                                     var div = document.createElement('div'), h;
+                                     div.appendChild( n.cloneNode(true) );
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  	    valueL += element.scrollLeft || 0;
+      } while (element = element.parentNode);
+    return {left : valueL, top: valueT};
+  };
+
+vq.utils.VisUtils.outerHTML = function(node){
+        // if IE, Chrome take the internal method otherwise build one
+        return node.outerHTML || (
+                                 function(n){
+                                     var div = document.createElement('div'), h;
+                                     div.appendChild( n.cloneNode(true) );
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

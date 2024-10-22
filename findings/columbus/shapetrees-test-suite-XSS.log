@@ -1,0 +1,44 @@
+49. Repo: shapetrees/test-suite
+	File: t.js
+	URL: https://github.com/shapetrees/test-suite/blob/6853bb0fb5ddcc1cd511a207c567cc9df18088da/t.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+  process.exit(suiteRun.stats.failures > 0) // Non-zero exit indicates errors.
+}) // Falling off end waits for Mocha events to finish.
+
+function asynchStuff (test) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(() => {
+//    console.log(test.name + ' on ' + test.endpoint + ': ' + test.wait + 'ms')
+      if (test.exception)
+        reject(Error(test.exception))
+      resolve({name: test.name, pass: test.pass}) // only need name and pass
+    }, test.wait)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  process.exit(suiteRun.stats.failures > 0) // Non-zero exit indicates errors.
+}) // Falling off end waits for Mocha events to finish.
+
+function asynchStuff (test) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(() => {
+//    console.log(test.name + ' on ' + test.endpoint + ': ' + test.wait + 'ms')
+      if (test.exception)
+        reject(Error(test.exception))
+      resolve({name: test.name, pass: test.pass}) // only need name and pass
+    }, test.wait)
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  process.exit('<script>alert("XSS")</script>',suiteRun.stats.failures > 0) // Non-zero exit indicates errors.
+}) // Falling off end waits for Mocha events to finish.
+
+function asynchStuff (test) {
+  return new Promise(function(resolve, reject) {
+    setTimeout(() => {
+//    console.log(test.name + ' on ' + test.endpoint + ': ' + test.wait + 'ms')
+      if (test.exception)
+        reject(Error(test.exception))
+      resolve({name: test.name, pass: test.pass}) // only need name and pass
+    }, test.wait)
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

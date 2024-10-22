@@ -1,0 +1,44 @@
+3. Repo: malko/l.js
+	File: l.js
+	URL: https://github.com/malko/l.js/blob/d3d3e21738a0b64582abed8d4ab63e602cc547a2/l.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+		, header  = D[getElementsByTagName]("head")[0] || D.documentElement
+		, aliases = {}
+		//-- get the current script tag for further evaluation of it's eventual content
+		, scripts = D[getElementsByTagName](scriptStr)
+		, scriptTag = scripts[scripts[length]-1]
+		, script  = scriptTag.innerHTML.replace(/^\s+|\s+$/g,'')
+		, appendElmt = function(type,attrs,cb){
+			var e = D.createElement(type), i;
+			if( cb ){ //-- this is not intended to be used for link
+				if( e[readyState] ){
+					e[onreadystatechange] = function(){
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+		, header  = D[getElementsByTagName]("head")[0] || D.documentElement
+		, aliases = {}
+		//-- get the current script tag for further evaluation of it's eventual content
+		, scripts = D[getElementsByTagName](scriptStr)
+		, scriptTag = scripts[scripts[length]-1]
+		, script  = scriptTag.innerHTML.replace(/^\s+|\s+$/g,'')
+		, appendElmt = function(type,attrs,cb){
+			var e = D.createElement(type), i;
+			if( cb ){ //-- this is not intended to be used for link
+				if( e[readyState] ){
+					e[onreadystatechange] = function(){
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+		, header  = D[getElementsByTagName]("head")[0] || D.documentElement
+		, aliases = {}
+		//-- get the current script tag for further evaluation of it's eventual content
+		, scripts = D[getElementsByTagName](scriptStr)
+		, scriptTag = scripts[scripts[length]-1]
+		, script  = scriptTag.innerHTML.replace(/^\s+|\s+$/g,'')
+		, appendElmt = function(type,attrs,cb){
+			var e = D.createElement(type), i;
+			if( cb ){ //-- this is not intended to be used for link
+				if( e[readyState] ){
+					e[onreadystatechange] = function(){
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

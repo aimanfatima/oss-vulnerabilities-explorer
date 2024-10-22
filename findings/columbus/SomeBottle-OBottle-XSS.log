@@ -1,0 +1,44 @@
+40. Repo: SomeBottle/OBottle
+	File: c/f.js
+	URL: https://github.com/SomeBottle/OBottle/blob/933f225c459c7b8d9052b3d07ee832c58e7583ca/c/f.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+    $.ht('正在上传', 'btn');
+    fd.append("label", "WEBUPLOAD");
+    $.aj("https://sm.ms/api/upload", fd, {
+        success: function(msg) {
+            if (msg != '') {
+                msg = eval("(" + msg + ")");
+            }
+            $.ht('上传完毕', 'btn');
+            mains = eval(msg.data);
+            document.getElementById("fileinfo").style.display = 'none';
+            document.getElementById("c").value = document.getElementById("c").value + '  \n![' + mains.filename + '](' + mains.url + ')';
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    $.ht('正在上传', 'btn');
+    fd.append("label", "WEBUPLOAD");
+    $.aj("https://sm.ms/api/upload", fd, {
+        success: function(msg) {
+            if (msg != '') {
+                msg = eval("(" + msg + ")");
+            }
+            $.ht('上传完毕', 'btn');
+            mains = eval(msg.data);
+            document.getElementById("fileinfo").style.display = 'none';
+            document.getElementById("c").value = document.getElementById("c").value + '  \n![' + mains.filename + '](' + mains.url + ')';
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    $.ht('<script>alert("XSS")</script>','正在上传', 'btn');
+    fd.append("label", "WEBUPLOAD");
+    $.aj("https://sm.ms/api/upload", fd, {
+        success: function(msg) {
+            if (msg != '') {
+                msg = eval("(" + msg + ")");
+            }
+            $.ht('上传完毕', 'btn');
+            mains = eval(msg.data);
+            document.getElementById("fileinfo").style.display = 'none';
+            document.getElementById("c").value = document.getElementById("c").value + '  \n![' + mains.filename + '](' + mains.url + ')';
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

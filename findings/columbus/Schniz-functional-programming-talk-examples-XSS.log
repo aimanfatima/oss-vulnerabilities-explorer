@@ -1,0 +1,44 @@
+28. Repo: Schniz/functional-programming-talk-examples
+	File: main.js
+	URL: https://github.com/Schniz/functional-programming-talk-examples/blob/2edda3202679a2e60471fcb71a5ec00eb6fb8bf3/main.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+// creates a shorthand dom functions
+const DOM = createDOM(
+  'td', 'tr', 'input', 'a', 'span', 'div', 'tbody', 'table',
+);
+
+$.fn.outerHTML = function() {
+  return this[0].outerHTML;
+}
+
+const map = fn => container => container.map(fn);
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+// creates a shorthand dom functions
+const DOM = createDOM(
+  'td', 'tr', 'input', 'a', 'span', 'div', 'tbody', 'table',
+);
+
+$.fn.outerHTML = function() {
+  return this[0].outerHTML;
+}
+
+const map = fn => container => container.map(fn);
+
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+// creates a shorthand dom functions
+const DOM = createDOM(
+  'td', 'tr', 'input', 'a', 'span', 'div', 'tbody', 'table',
+);
+
+$.fn.outerHTML = function() {
+  return this[0].outerHTML;
+}
+
+const map = fn => container => container.map(fn);
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

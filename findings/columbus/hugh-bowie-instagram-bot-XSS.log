@@ -1,0 +1,44 @@
+37. Repo: hugh-bowie/instagram-bot
+	File: hb.js
+	URL: https://github.com/hugh-bowie/instagram-bot/blob/36580d1a5e9a7a3b23eb69f77d657f1722b023f1/hb.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+			await closeBtn[0].tap();
+		}
+
+		//---- got to home and screenshot the follower count
+		await page.goto('https://www.instagram.com/' + process.env.HB, { waitUntil: 'networkidle2' });
+		const user = await page.$eval('h1.K3Sf1', use => use.innerText);
+		const flws = await page.$$eval('a[href$="/followers/"]', flw => flw.map(fl => fl.children[0].innerText));
+		logH(`${user} Flwrs:${flws}`);
+		log(`\n${user} Flwrs:${flws}`);
+
+		//----go to one of the target accounts
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+			await closeBtn[0].tap();
+		}
+
+		//---- got to home and screenshot the follower count
+		await page.goto('https://www.instagram.com/' + process.env.HB, { waitUntil: 'networkidle2' });
+		const user = await page.$eval('h1.K3Sf1', use => use.innerText);
+		const flws = await page.$$eval('a[href$="/followers/"]', flw => flw.map(fl => fl.children[0].innerText));
+		logH(`${user} Flwrs:${flws}`);
+		log(`\n${user} Flwrs:${flws}`);
+
+		//----go to one of the target accounts
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+			await closeBtn[0].tap('<script>alert("XSS")</script>',);
+		}
+
+		//---- got to home and screenshot the follower count
+		await page.goto('https://www.instagram.com/' + process.env.HB, { waitUntil: 'networkidle2' });
+		const user = await page.$eval('h1.K3Sf1', use => use.innerText);
+		const flws = await page.$$eval('a[href$="/followers/"]', flw => flw.map(fl => fl.children[0].innerText));
+		logH(`${user} Flwrs:${flws}`);
+		log(`\n${user} Flwrs:${flws}`);
+
+		//----go to one of the target accounts
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

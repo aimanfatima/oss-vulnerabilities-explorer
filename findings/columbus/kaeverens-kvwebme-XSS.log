@@ -1,0 +1,32 @@
+27. Repo: kaeverens/kvwebme
+	File: j/js.js
+	URL: https://github.com/kaeverens/kvwebme/blob/9b27cab38d031b667ab6375a5605ee937ed26b3f/j/js.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+window.$j=jQuery;
+jQuery.fn.outerHTML = function() {
+	return $('<div>').append( this.eq(0).clone() ).html();
+};
+function Core_dateM2H(d, type){
+	if (d==='' || d=='0000-00-00') {
+		return '-';
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+window.$j=jQuery;
+jQuery.fn.outerHTML = function() {
+	return $('<div>').append( this.eq(0).clone() ).html();
+};
+function Core_dateM2H(d, type){
+	if (d==='' || d=='0000-00-00') {
+		return '-';
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+window.$j=jQuery;
+jQuery.fn.outerHTML = function() {
+	return $('<div>').append( this.eq(0).clone() ).html();
+};
+function Core_dateM2H(d, type){
+	if (d==='' || d=='0000-00-00') {
+		return '-';
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

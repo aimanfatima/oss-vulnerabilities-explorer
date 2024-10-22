@@ -1,0 +1,41 @@
+4. Repo: zserge/q
+	File: q.js
+	URL: https://github.com/zserge/q/blob/6206173e2753168c258ec6044caafdd4b0d0e9f0/q.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+const call = (expr, ctx) =>
+  new Function(`with(this){${`return ${expr}`}}`).bind(ctx)();
+
+const directives = {
+  html: (el, _, val, ctx) => (el.innerHTML = call(val, ctx)),
+  text: (el, _, val, ctx) => (el.innerText = call(val, ctx)),
+  if: (el, _, val, ctx) => (el.hidden = !call(val, ctx)),
+  on: (el, name, val, ctx) => (el[`on${name}`] = () => call(val, ctx)),
+  model: (el, name, val, ctx) => {
+    el.value = ctx[val];
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+const call = (expr, ctx) =>
+  new Function(`with(this){${`return ${expr}`}}`).bind(ctx)();
+
+const directives = {
+  html: (el, _, val, ctx) => (el.innerHTML = call(val, ctx)),
+  text: (el, _, val, ctx) => (el.innerText = call(val, ctx)),
+  if: (el, _, val, ctx) => (el.hidden = !call(val, ctx)),
+  on: (el, name, val, ctx) => (el[`on${name}`] = () => call(val, ctx)),
+  model: (el, name, val, ctx) => {
+    el.value = ctx[val];
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+const call = (expr, ctx) =>
+  new Function(`with(this){${`return ${expr}`}}`).bind(ctx)();
+
+const directives = {
+  html: (el, _, val, ctx) => (el.innerHTML = call(val, ctx)),
+  text: (el, _, val, ctx) => (el.innerText = call(val, ctx)),
+  if: (el, _, val, ctx) => (el.hidden = !call(val, ctx)),
+  on: (el, name, val, ctx) => (el[`on${name}`] = () => call(val, ctx)),
+  model: (el, name, val, ctx) => {
+    el.value = ctx[val];
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

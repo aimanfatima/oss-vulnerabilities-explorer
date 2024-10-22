@@ -1,0 +1,44 @@
+50. Repo: o0101/-
+	File: -.js
+	URL: https://github.com/o0101/-/blob/7033623c9e997ec35e5c27a68638f3a62f55199d/-.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+        }
+        this.state = val;
+      } else {
+        const propName = attributeToProperty(name);
+        if ( this[propName] != newValue ) {
+          setTimeout(() => { // we need to make the property update async otherwise the setter triggers an infinite loop
+            this[propName] = newValue;
+            this.render();
+           }, 0); 
+        }
+      }
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        }
+        this.state = val;
+      } else {
+        const propName = attributeToProperty(name);
+        if ( this[propName] != newValue ) {
+          setTimeout(() => { // we need to make the property update async otherwise the setter triggers an infinite loop
+            this[propName] = newValue;
+            this.render();
+           }, 0); 
+        }
+      }
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+        }
+        this.state = val;
+      } else {
+        const propName = attributeToProperty('<script>alert("XSS")</script>',name);
+        if ( this[propName] != newValue ) {
+          setTimeout(() => { // we need to make the property update async otherwise the setter triggers an infinite loop
+            this[propName] = newValue;
+            this.render();
+           }, 0); 
+        }
+      }
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

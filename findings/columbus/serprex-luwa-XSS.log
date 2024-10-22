@@ -1,0 +1,44 @@
+36. Repo: serprex/luwa
+	File: ui.js
+	URL: https://github.com/serprex/luwa/blob/8e4852e13e56b7ece875360e31bc01a128c762ed/ui.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+		let mem = new Uint8Array(rt.mem.buffer);
+		util.writeuint32(mem, main.val + 10, mainbc.val);
+		util.writeuint32(mem, main.val + 14, mainconsts.val);
+		util.writeuint32(mem, main.val + 18, mainfrees.val);
+		rt.mod.init(main.val);
+		console.log(rt.mod.eval());
+		console.log(rt.mod.eval());
+	});
+});
+document.getElementById("btnGo").addEventListener("click", (s, e) => {
+	require("./rt")().then(rt => {
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+		let mem = new Uint8Array(rt.mem.buffer);
+		util.writeuint32(mem, main.val + 10, mainbc.val);
+		util.writeuint32(mem, main.val + 14, mainconsts.val);
+		util.writeuint32(mem, main.val + 18, mainfrees.val);
+		rt.mod.init(main.val);
+		console.log(rt.mod.eval());
+		console.log(rt.mod.eval());
+	});
+});
+document.getElementById("btnGo").addEventListener("click", (s, e) => {
+	require("./rt")().then(rt => {
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+		let mem = new Uint8Array('<script>alert("XSS")</script>',rt.mem.buffer);
+		util.writeuint32(mem, main.val + 10, mainbc.val);
+		util.writeuint32(mem, main.val + 14, mainconsts.val);
+		util.writeuint32(mem, main.val + 18, mainfrees.val);
+		rt.mod.init(main.val);
+		console.log(rt.mod.eval());
+		console.log(rt.mod.eval());
+	});
+});
+document.getElementById("btnGo").addEventListener("click", (s, e) => {
+	require("./rt")().then(rt => {
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

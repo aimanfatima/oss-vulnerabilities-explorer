@@ -1,0 +1,44 @@
+5. Repo: DLarisa/FMI-Materials-BachelorDegree-UniBuc
+	File: Tehnici Web (TW)/Proiect/2.js
+	URL: https://github.com/DLarisa/FMI-Materials-BachelorDegree-UniBuc/blob/d0fca0b1dfa3d6768fe78de72ffa7db009539edb/Tehnici%20Web%20(TW)/Proiect/2.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+	v=["Pick Audio File", "Melodie 1", "Melodie 2", "Melodie 3"];
+	var sel=document.createElement("select");
+	document.getElementById("song").appendChild(sel);
+	for(el of v)
+	{
+		sel.innerHTML+=`<option value="${el}"> ${el} </option>`;
+	}
+	sel.onchange=function()
+	{
+		var y = sel.value;
+		var x = y.match(/\d+/)[0] // ia prima cifra din sirul de caractere
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	v=["Pick Audio File", "Melodie 1", "Melodie 2", "Melodie 3"];
+	var sel=document.createElement("select");
+	document.getElementById("song").appendChild(sel);
+	for(el of v)
+	{
+		sel.innerHTML+=`<option value="${el}"> ${el} </option>`;
+	}
+	sel.onchange=function()
+	{
+		var y = sel.value;
+		var x = y.match(/\d+/)[0] // ia prima cifra din sirul de caractere
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+	v=["Pick Audio File", "Melodie 1", "Melodie 2", "Melodie 3"];
+	var sel=document.createElement("select");
+	document.getElementById("song").appendChild(sel);
+	for(el of v)
+	{
+		sel.innerHTML+=`<option value="${el}"><script>alert("XSS")</script> ${el} </option>`;
+	}
+	sel.onchange=function()
+	{
+		var y = sel.value;
+		var x = y.match(/\d+/)[0] // ia prima cifra din sirul de caractere
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

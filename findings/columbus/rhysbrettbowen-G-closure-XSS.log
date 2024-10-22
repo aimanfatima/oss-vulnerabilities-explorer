@@ -1,0 +1,44 @@
+23. Repo: rhysbrettbowen/G-closure
+	File: g.js
+	URL: https://github.com/rhysbrettbowen/G-closure/blob/a5ef1a6d2cffa3fa4fb460dbf20f0369dde4c8e7/g.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+    this.each(function(el) {goog.dom.append(/** @type {!Node} */(el),
+          opt_input.cloneNode(true));});
+  } else if (goog.isString(opt_input)) {
+    this.each(function(el) {el.innerHTML = opt_input;});
+  } else {
+    var html = $(opt_input).outerHTML();
+    this.each(function(el) {el.innerHTML = html;});
+  }
+  return this;
+};
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    this.each(function(el) {goog.dom.append(/** @type {!Node} */(el),
+          opt_input.cloneNode(true));});
+  } else if (goog.isString(opt_input)) {
+    this.each(function(el) {el.innerHTML = opt_input;});
+  } else {
+    var html = $(opt_input).outerHTML();
+    this.each(function(el) {el.innerHTML = html;});
+  }
+  return this;
+};
+
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    this.each(function(el) {goog.dom.append(/** @type {!Node} */(el),
+          opt_input.cloneNode(true));});
+  } else if (goog.isString(opt_input)) {
+    this.each(function(el) {el.innerHTML = opt_input;});
+  } else {
+    var html = $(opt_input).outerHTML();
+    this.each(function(el) {el.innerHTML = html;});
+  }
+  return this;
+};
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

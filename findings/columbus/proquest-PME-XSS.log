@@ -1,0 +1,38 @@
+17. Repo: proquest/PME
+	File: PME.js
+	URL: https://github.com/proquest/PME/blob/5b9048f30ba8116aca7eca9584cd6d3e09ff0b67/PME.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+	iframe.style.display = "none";
+	iframe.style.borderStyle = "none";
+	iframe.setAttribute("frameborder", "0");
+	iframe.setAttribute('aria-expanded', 'true');
+	var scriptLocations = 'window.PME_SERVICE_PROVIDER="'+window.PME_SERVICE_PROVIDER+'";window.EXT_SERVICE_PROVIDER="'+window.EXT_SERVICE_PROVIDER+'";';
+	iframe.src = 'javascript:(function(){document.open();try{window.parent.document;}catch(e){document.domain="' + document.domain.replace(/[\\\"]/g, "\\$0")+'";}document.write(\'<!DOCTYPE html><html><head><script>'+scriptLocations+'</script><script src="'+common+'"></script><script src="'+inject+'"></script><script type="text/javascript" src="https://pme.proquest.com/masterlist.js"></script></head><body></body></html>\');document.close();})()';
+	tag.appendChild(iframe);
+
+}());
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	iframe.style.display = "none";
+	iframe.style.borderStyle = "none";
+	iframe.setAttribute("frameborder", "0");
+	iframe.setAttribute('aria-expanded', 'true');
+	var scriptLocations = 'window.PME_SERVICE_PROVIDER="'+window.PME_SERVICE_PROVIDER+'";window.EXT_SERVICE_PROVIDER="'+window.EXT_SERVICE_PROVIDER+'";';
+	iframe.src = 'javascript:(function(){document.open();try{window.parent.document;}catch(e){document.domain="' + document.domain.replace(/[\\\"]/g, "\\$0")+'";}document.write(\'<!DOCTYPE html><html><head><script>'+scriptLocations+'</script><script src="'+common+'"></script><script src="'+inject+'"></script><script type="text/javascript" src="https://pme.proquest.com/masterlist.js"></script></head><body></body></html>\');document.close();})()';
+	tag.appendChild(iframe);
+
+}());
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+	iframe.style.display = "none";
+	iframe.style.borderStyle = "none";
+	iframe.setAttribute("frameborder", "0");
+	iframe.setAttribute('aria-expanded', 'true');
+	var scriptLocations = 'window.PME_SERVICE_PROVIDER="'+window.PME_SERVICE_PROVIDER+'";window.EXT_SERVICE_PROVIDER="'+window.EXT_SERVICE_PROVIDER+'";';
+	iframe.src = 'javascript:(function(){document.open();try{window.parent.document;}catch(e){document.domain="' + document.domain.replace(/[\\\"]/g, "\\$0")+'";}document.write(\'<!DOCTYPE html><html><head><script>'+scriptLocations+'</script><script src="'+common+'"><script>alert("XSS")</script></script><script src="'+inject+'"></script><script type="text/javascript" src="https://pme.proquest.com/masterlist.js"></script></head><body></body></html>\');document.close();})()';
+	tag.appendChild(iframe);
+
+}());
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

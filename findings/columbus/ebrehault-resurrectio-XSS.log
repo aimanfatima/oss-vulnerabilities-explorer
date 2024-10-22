@@ -1,0 +1,44 @@
+11. Repo: ebrehault/resurrectio
+	File: doc.js
+	URL: https://github.com/ebrehault/resurrectio/blob/fd12bbdfc1d24cf60f0fb8f809e4c805b569bc3e/doc.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+  this.screen_id = 1;
+}
+
+DocumentRenderer.prototype.text = function(txt) {
+  // todo: long lines
+  this.document.writeln(txt);
+}
+
+DocumentRenderer.prototype.stmt = function(text) {
+  this.document.writeln(text);
+}
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  this.screen_id = 1;
+}
+
+DocumentRenderer.prototype.text = function(txt) {
+  // todo: long lines
+  this.document.writeln(txt);
+}
+
+DocumentRenderer.prototype.stmt = function(text) {
+  this.document.writeln(text);
+}
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  this.screen_id = 1;
+}
+
+DocumentRenderer.prototype.text = function(txt) {
+  // todo: long lines
+  this.document.writeln(txt);
+}
+
+DocumentRenderer.prototype.stmt = function(text) {
+  this.document.writeln(text);
+}
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

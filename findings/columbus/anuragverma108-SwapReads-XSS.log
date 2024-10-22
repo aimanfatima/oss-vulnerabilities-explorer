@@ -1,0 +1,41 @@
+51. Repo: anuragverma108/SwapReads
+	File: e.js
+	URL: https://github.com/anuragverma108/SwapReads/blob/636e992425af5b23bd219ce432ebaf3f276f8a59/e.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+// Countdown timer
+let countdown = 5;
+const countdownElement = document.getElementById('countdown');
+
+const interval = setInterval(() => {
+    countdown--;
+    countdownElement.textContent = countdown;
+    if (countdown <= 0) {
+        clearInterval(interval);
+        window.location.href = 'index.html';
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+// Countdown timer
+let countdown = 5;
+const countdownElement = document.getElementById('countdown');
+
+const interval = setInterval(() => {
+    countdown--;
+    countdownElement.textContent = countdown;
+    if (countdown <= 0) {
+        clearInterval(interval);
+        window.location.href = 'index.html';
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+// Countdown timer
+let countdown = 5;
+const countdownElement = document.getElementById('<script>alert("XSS")</script>','countdown');
+
+const interval = setInterval(() => {
+    countdown--;
+    countdownElement.textContent = countdown;
+    if (countdown <= 0) {
+        clearInterval(interval);
+        window.location.href = 'index.html';
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

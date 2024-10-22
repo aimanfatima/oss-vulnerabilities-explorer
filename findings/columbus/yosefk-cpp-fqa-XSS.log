@@ -1,0 +1,35 @@
+12. Repo: yosefk/cpp-fqa
+	File: ga.js
+	URL: https://github.com/yosefk/cpp-fqa/blob/1b2a1a70526e80bb2d00ed5f62890f6d1ac8e63c/ga.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11102124-1");
+pageTracker._trackPageview();
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+<script type="text/javascript">
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11102124-1");
+pageTracker._trackPageview();
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+<script type="text/javascript"><script>alert("XSS")</script>
+var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+</script>
+<script type="text/javascript">
+try {
+var pageTracker = _gat._getTracker("UA-11102124-1");
+pageTracker._trackPageview();
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

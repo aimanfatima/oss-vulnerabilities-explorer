@@ -1,0 +1,44 @@
+9. Repo: davidmarkclements/Respondu
+	File: R.js
+	URL: https://github.com/davidmarkclements/Respondu/blob/20ebb72a865c57063303cc3a5fc53fd8e2d5c9b2/R.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+  div.style.cssText = "position:absolute;top:-100em";
+  fakeBody.style.background = "none";
+  fakeBody.appendChild(div);
+
+  var mqRun = function ( mq ) {
+    div.innerHTML = '&shy;<style media="' + mq + '"> #mq-test-1 { width: 42px; }</style>';
+    docElem.insertBefore( fakeBody, refNode );
+    bool = div.offsetWidth === 42;
+    docElem.removeChild( fakeBody );
+    
+    return { matches: bool, media: mq };
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  div.style.cssText = "position:absolute;top:-100em";
+  fakeBody.style.background = "none";
+  fakeBody.appendChild(div);
+
+  var mqRun = function ( mq ) {
+    div.innerHTML = '&shy;<style media="' + mq + '"> #mq-test-1 { width: 42px; }</style>';
+    docElem.insertBefore( fakeBody, refNode );
+    bool = div.offsetWidth === 42;
+    docElem.removeChild( fakeBody );
+    
+    return { matches: bool, media: mq };
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  div.style.cssText = "position:absolute;top:-100em";
+  fakeBody.style.background = "none";
+  fakeBody.appendChild(div);
+
+  var mqRun = function ( mq ) {
+    div.innerHTML = '&shy;<style media="' + mq + '"><script>alert("XSS")</script> #mq-test-1 { width: 42px; }</style>';
+    docElem.insertBefore( fakeBody, refNode );
+    bool = div.offsetWidth === 42;
+    docElem.removeChild( fakeBody );
+    
+    return { matches: bool, media: mq };
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

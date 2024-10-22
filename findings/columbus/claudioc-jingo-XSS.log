@@ -1,0 +1,44 @@
+60. Repo: claudioc/jingo
+	File: jingo
+	URL: https://github.com/claudioc/jingo/blob/10079c22d6cb66cfa0e7a91742c631fa0a153bd4/jingo
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+      'Warning: using the configuration option `allowHtml: true` may have security implications; please consult the README for more info.'
+    )
+  }
+
+  if (config.get('application').pushInterval && refspec.length > 0) {
+    setInterval(function () {
+      Git.pull(function (err) {
+        if (err) {
+          console.log('Error: ' + err)
+        } else {
+          Git.push(function (err) {
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+      'Warning: using the configuration option `allowHtml: true` may have security implications; please consult the README for more info.'
+    )
+  }
+
+  if (config.get('application').pushInterval && refspec.length > 0) {
+    setInterval(function () {
+      Git.pull(function (err) {
+        if (err) {
+          console.log('Error: ' + err)
+        } else {
+          Git.push(function (err) {
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+      'Warning: using the configuration option `allowHtml: true` may have security implications; please consult the README for more info.'
+    )
+  }
+
+  if ('<script>alert("XSS")</script>',config.get('application').pushInterval && refspec.length > 0) {
+    setInterval(function () {
+      Git.pull(function (err) {
+        if (err) {
+          console.log('Error: ' + err)
+        } else {
+          Git.push(function (err) {
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

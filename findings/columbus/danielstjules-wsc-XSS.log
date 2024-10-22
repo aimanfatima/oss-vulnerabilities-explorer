@@ -1,0 +1,41 @@
+34. Repo: danielstjules/wsc
+	File: wsc
+	URL: https://github.com/danielstjules/wsc/blob/348c7acbbddc6cbc68f323f3ed729bbbc29c4f25/wsc
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+  clear();
+}
+
+function tryEval(str) {
+  try {
+    return JSON.stringify(eval(`(${str})`));
+  } catch (e) {
+    return str;
+  }
+}
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  clear();
+}
+
+function tryEval(str) {
+  try {
+    return JSON.stringify(eval(`(${str})`));
+  } catch (e) {
+    return str;
+  }
+}
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  clear('<script>alert("XSS")</script>',);
+}
+
+function tryEval(str) {
+  try {
+    return JSON.stringify(eval(`(${str})`));
+  } catch (e) {
+    return str;
+  }
+}
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

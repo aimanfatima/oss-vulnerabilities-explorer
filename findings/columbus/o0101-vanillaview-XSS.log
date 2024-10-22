@@ -1,0 +1,44 @@
+1. Repo: o0101/vanillaview
+	File: r.js
+	URL: https://github.com/o0101/vanillaview/blob/97638d90ae35ec8d1038894a411147ae11923b58/r.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+      beforeend   (frag,elem) { elem.appendChild(frag) }
+      beforebegin (frag,elem) { elem.parentNode.insertBefore(frag,elem) }
+      afterend    (frag,elem) { elem.parentNode.insertBefore(frag,elem.nextSibling) }
+      replace     (frag,elem) { elem.parentNode.replaceChild(frag,elem) }
+      afterbegin  (frag,elem) { elem.insertBefore(frag,elem.firstChild) }
+      innerhtml   (frag,elem) { elem.innerHTML = ''; elem.appendChild(frag) }
+    };
+
+  // logging
+    self.onerror = (...v) => (console.log(v, v[0]+'', v[4] && v[4].message, v[4] && v[4].stack), true);
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+      beforeend   (frag,elem) { elem.appendChild(frag) }
+      beforebegin (frag,elem) { elem.parentNode.insertBefore(frag,elem) }
+      afterend    (frag,elem) { elem.parentNode.insertBefore(frag,elem.nextSibling) }
+      replace     (frag,elem) { elem.parentNode.replaceChild(frag,elem) }
+      afterbegin  (frag,elem) { elem.insertBefore(frag,elem.firstChild) }
+      innerhtml   (frag,elem) { elem.innerHTML = ''; elem.appendChild(frag) }
+    };
+
+  // logging
+    self.onerror = (...v) => (console.log(v, v[0]+'', v[4] && v[4].message, v[4] && v[4].stack), true);
+
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+      beforeend   (frag,elem) { elem.appendChild(frag) }
+      beforebegin (frag,elem) { elem.parentNode.insertBefore(frag,elem) }
+      afterend    (frag,elem) { elem.parentNode.insertBefore(frag,elem.nextSibling) }
+      replace     (frag,elem) { elem.parentNode.replaceChild(frag,elem) }
+      afterbegin  (frag,elem) { elem.insertBefore(frag,elem.firstChild) }
+      innerhtml   (frag,elem) { elem.innerHTML = ''; elem.appendChild(frag) }
+    };
+
+  // logging
+    self.onerror = (...v) => (console.log(v, v[0]+'', v[4] && v[4].message, v[4] && v[4].stack), true);
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -24,4 +24,4 @@ python -m pip install -r requirements.txt
 
 ## Files:
 
-1. `chairdemon.py`: The file which given a vulnerability scans OSS github repos for occurences.
+1. `columbus.py`: The file which given a vulnerability scans OSS github repos for occurences.

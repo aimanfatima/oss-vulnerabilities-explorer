@@ -1,0 +1,44 @@
+58. Repo: EGreg/Q.js
+	File: Q.js
+	URL: https://github.com/EGreg/Q.js/blob/176452accd82e74630aedc48c6a90de725bb4129/Q.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+	if (window.jQuery) {
+		Q.jQueryPluginPlugin();
+		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
+		jQuery(document).ready(_domReady);
+	} else {
+		var _timer=setInterval(function(){
+			if(/loaded|complete/.test(document.readyState)) {
+				clearInterval(_timer);
+				_domReady();
+			}
+		}, 10);
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	if (window.jQuery) {
+		Q.jQueryPluginPlugin();
+		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
+		jQuery(document).ready(_domReady);
+	} else {
+		var _timer=setInterval(function(){
+			if(/loaded|complete/.test(document.readyState)) {
+				clearInterval(_timer);
+				_domReady();
+			}
+		}, 10);
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+	if ('<script>alert("XSS")</script>',window.jQuery) {
+		Q.jQueryPluginPlugin();
+		Q.onJQuery.handle(window.jQuery, [window.jQuery]);
+		jQuery(document).ready(_domReady);
+	} else {
+		var _timer=setInterval(function(){
+			if(/loaded|complete/.test(document.readyState)) {
+				clearInterval(_timer);
+				_domReady();
+			}
+		}, 10);
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -1,0 +1,44 @@
+52. Repo: romanmatiasko/reti-chess
+	File: io.js
+	URL: https://github.com/romanmatiasko/reti-chess/blob/1d343f914d83bffd9357a6d34b4705fd8d74c59d/io.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+      clearInterval(_games.getIn([token, 'interval']));
+      
+      _games = _games
+        .updateIn([token, 'players', idx, 'time'], time =>
+          time += player.get('inc'))
+        .setIn([token, 'interval'], setInterval(() => {
+          let timeLeft = 0;
+          _games = _games.updateIn([token, 'players', idx, 'time'], time => {
+            timeLeft = time - 1;
+            return time - 1;
+          });
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+      clearInterval(_games.getIn([token, 'interval']));
+      
+      _games = _games
+        .updateIn([token, 'players', idx, 'time'], time =>
+          time += player.get('inc'))
+        .setIn([token, 'interval'], setInterval(() => {
+          let timeLeft = 0;
+          _games = _games.updateIn([token, 'players', idx, 'time'], time => {
+            timeLeft = time - 1;
+            return time - 1;
+          });
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+      clearInterval('<script>alert("XSS")</script>',_games.getIn([token, 'interval']));
+      
+      _games = _games
+        .updateIn([token, 'players', idx, 'time'], time =>
+          time += player.get('inc'))
+        .setIn([token, 'interval'], setInterval(() => {
+          let timeLeft = 0;
+          _games = _games.updateIn([token, 'players', idx, 'time'], time => {
+            timeLeft = time - 1;
+            return time - 1;
+          });
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

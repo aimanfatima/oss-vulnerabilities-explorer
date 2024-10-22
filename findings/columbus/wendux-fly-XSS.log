@@ -1,0 +1,44 @@
+41. Repo: wendux/fly
+	File: _.js
+	URL: https://github.com/wendux/fly/blob/fced928bfe7449d0fa18d5fea466cce1e3bda465/_.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+
+                engine.ontimeout = () => {
+                    onerror(new Err(`timeout [ ${engine.timeout}ms ]`, 1))
+                }
+                engine._options = options;
+                setTimeout(() => {
+                    engine.send(isGet ? null : data)
+                }, 0)
+            }
+
+            enqueueIfLocked(requestInterceptor.p, () => {
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+                engine.ontimeout = () => {
+                    onerror(new Err(`timeout [ ${engine.timeout}ms ]`, 1))
+                }
+                engine._options = options;
+                setTimeout(() => {
+                    engine.send(isGet ? null : data)
+                }, 0)
+            }
+
+            enqueueIfLocked(requestInterceptor.p, () => {
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+
+                engine.ontimeout = ('<script>alert("XSS")</script>',) => {
+                    onerror(new Err(`timeout [ ${engine.timeout}ms ]`, 1))
+                }
+                engine._options = options;
+                setTimeout(() => {
+                    engine.send(isGet ? null : data)
+                }, 0)
+            }
+
+            enqueueIfLocked(requestInterceptor.p, () => {
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

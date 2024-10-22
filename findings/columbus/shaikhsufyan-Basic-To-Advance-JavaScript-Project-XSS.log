@@ -1,0 +1,44 @@
+10. Repo: shaikhsufyan/Basic-To-Advance-JavaScript-Project
+	File: Weather App/w.js
+	URL: https://github.com/shaikhsufyan/Basic-To-Advance-JavaScript-Project/blob/9d2e4ee5991f8b43248c0423575ad6a33df5a8c9/Weather%20App/w.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+     
+    console.log(jsonData);
+    if(jsonData.cod == 400){
+        alert("Please Enter Location")
+        image.src="error1.png"
+        temp.innerHTML=""
+    type.innerHTML=""
+    }
+    if(jsonData.cod == 404){
+        alert("Please Enter Write Location");
+        image.src="error2.png";
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+     
+    console.log(jsonData);
+    if(jsonData.cod == 400){
+        alert("Please Enter Location")
+        image.src="error1.png"
+        temp.innerHTML=""
+    type.innerHTML=""
+    }
+    if(jsonData.cod == 404){
+        alert("Please Enter Write Location");
+        image.src="error2.png";
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+     
+    console.log(jsonData);
+    if(jsonData.cod == 400){
+        alert("Please Enter Location")
+        image.src="error1.png"
+        temp.innerHTML=""
+    type.innerHTML=""
+    }
+    if(jsonData.cod == 404){
+        alert("Please Enter Write Location");
+        image.src="error2.png";
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

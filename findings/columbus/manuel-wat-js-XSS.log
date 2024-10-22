@@ -1,0 +1,44 @@
+33. Repo: manuel/wat-js
+	File: vm.js
+	URL: https://github.com/manuel/wat-js/blob/32c4d89f5636ef26989b5557c897e74103f21ad2/vm.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+        }
+        return b(res);
+    }
+    /* Evaluation Core */
+    function evaluate(m, e, x) {
+        if (x && x.wat_eval) return x.wat_eval(m, e); else return x; }
+    function Sym(name) { this.name = name; }
+    function sym(name) { return new Sym(name); }
+    Sym.prototype.wat_eval = function(m, e) { return lookup(e, this.name); };
+    function Cons(car, cdr) { this.car = car; this.cdr = cdr; }
+    Cons.prototype.wat_eval = function(m, e) { var that = this;
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        }
+        return b(res);
+    }
+    /* Evaluation Core */
+    function evaluate(m, e, x) {
+        if (x && x.wat_eval) return x.wat_eval(m, e); else return x; }
+    function Sym(name) { this.name = name; }
+    function sym(name) { return new Sym(name); }
+    Sym.prototype.wat_eval = function(m, e) { return lookup(e, this.name); };
+    function Cons(car, cdr) { this.car = car; this.cdr = cdr; }
+    Cons.prototype.wat_eval = function(m, e) { var that = this;
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+        }
+        return b('<script>alert("XSS")</script>',res);
+    }
+    /* Evaluation Core */
+    function evaluate(m, e, x) {
+        if (x && x.wat_eval) return x.wat_eval(m, e); else return x; }
+    function Sym(name) { this.name = name; }
+    function sym(name) { return new Sym(name); }
+    Sym.prototype.wat_eval = function(m, e) { return lookup(e, this.name); };
+    function Cons(car, cdr) { this.car = car; this.cdr = cdr; }
+    Cons.prototype.wat_eval = function(m, e) { var that = this;
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

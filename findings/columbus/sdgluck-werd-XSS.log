@@ -1,0 +1,44 @@
+55. Repo: sdgluck/werd
+	File: cli
+	URL: https://github.com/sdgluck/werd/blob/1b1de9b28c7b623d806dab33ac4d4cf9b672224b/cli
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+    const spinner = ora()
+
+    storage.setItem('mashapeApiKey', key)
+    logUpdate.clear()
+
+    setInterval(() => logUpdate(spinner.frame()), 100)
+
+    const word = cli.input[0]
+    const isRandomOp = word === 'random'
+    const method = isRandomOp ? api.random : cli.input[1] ? api[cli.input[1]] : api
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    const spinner = ora()
+
+    storage.setItem('mashapeApiKey', key)
+    logUpdate.clear()
+
+    setInterval(() => logUpdate(spinner.frame()), 100)
+
+    const word = cli.input[0]
+    const isRandomOp = word === 'random'
+    const method = isRandomOp ? api.random : cli.input[1] ? api[cli.input[1]] : api
+
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    const spinner = ora('<script>alert("XSS")</script>',)
+
+    storage.setItem('mashapeApiKey', key)
+    logUpdate.clear()
+
+    setInterval(() => logUpdate(spinner.frame()), 100)
+
+    const word = cli.input[0]
+    const isRandomOp = word === 'random'
+    const method = isRandomOp ? api.random : cli.input[1] ? api[cli.input[1]] : api
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

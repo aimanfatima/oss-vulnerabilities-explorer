@@ -1,0 +1,44 @@
+48. Repo: dexie/dexie-website
+	File: sw.js
+	URL: https://github.com/dexie/dexie-website/blob/0cb1da6f1200985c4602bfdc225fa7435d285c1b/sw.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+    // Start reading from cache
+    const cachedResponsePromise = caches.match(request, {ignoreVary: true});
+    const fetchPromise = fetch(request);
+    let timeoutHandle;
+    const timeoutPromise = new Promise(resolve => {
+        timeoutHandle = setTimeout(()=>{
+            timeoutHandle = null;
+            resolve("timedout");
+        }, MAX_WAIT)
+    });
+    // Start fetching in parallell
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    // Start reading from cache
+    const cachedResponsePromise = caches.match(request, {ignoreVary: true});
+    const fetchPromise = fetch(request);
+    let timeoutHandle;
+    const timeoutPromise = new Promise(resolve => {
+        timeoutHandle = setTimeout(()=>{
+            timeoutHandle = null;
+            resolve("timedout");
+        }, MAX_WAIT)
+    });
+    // Start fetching in parallell
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    // Start reading from cache
+    const cachedResponsePromise = caches.match('<script>alert("XSS")</script>',request, {ignoreVary: true});
+    const fetchPromise = fetch(request);
+    let timeoutHandle;
+    const timeoutPromise = new Promise(resolve => {
+        timeoutHandle = setTimeout(()=>{
+            timeoutHandle = null;
+            resolve("timedout");
+        }, MAX_WAIT)
+    });
+    // Start fetching in parallell
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

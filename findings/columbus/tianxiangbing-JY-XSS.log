@@ -1,0 +1,44 @@
+24. Repo: tianxiangbing/JY
+	File: JY.js
+	URL: https://github.com/tianxiangbing/JY/blob/851fb259abe57c5316ed854f40e16b2b745081ab/JY.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+				width: maxWidth + "px",
+				'text-align': "center"
+			});
+			JY.addClass(percent, 'percent');
+			JY.append(progressDiv, percent);
+			return JY.outerHTML(progressDiv);
+		},
+		outerHTML: function (elem) {
+			elem = JY.byId(elem);
+			var tmp = doc.createElement('div');
+			JY.append(tmp, elem);
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+				width: maxWidth + "px",
+				'text-align': "center"
+			});
+			JY.addClass(percent, 'percent');
+			JY.append(progressDiv, percent);
+			return JY.outerHTML(progressDiv);
+		},
+		outerHTML: function (elem) {
+			elem = JY.byId(elem);
+			var tmp = doc.createElement('div');
+			JY.append(tmp, elem);
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+				width: maxWidth + "px",
+				'text-align': "center"
+			});
+			JY.addClass(percent, 'percent');
+			JY.append(progressDiv, percent);
+			return JY.outerHTML(progressDiv);
+		},
+		outerHTML: function (elem) {
+			elem = JY.byId(elem);
+			var tmp = doc.createElement('div');
+			JY.append(tmp, elem);
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

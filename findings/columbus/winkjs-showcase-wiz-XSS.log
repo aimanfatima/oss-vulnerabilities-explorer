@@ -1,0 +1,44 @@
+6. Repo: winkjs/showcase-wiz
+	File: a.js
+	URL: https://github.com/winkjs/showcase-wiz/blob/6beb135f161fbcfe335c5bcb68dbfd3058d3424f/a.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+  var entities = document.getElementById('entities');
+  var wordFreq = document.getElementById('word-freq');
+  var sentimentTable = document.getElementById('sentiment-table');
+
+  // Marked up
+  output.innerHTML = info.taggedText;
+
+  // Entitiy list
+  entities.innerHTML = '';
+  info.entities.forEach( function (e) {
+    entities.innerHTML += '<li class="' + e.type + '">' + e.value + '</li>';
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  var entities = document.getElementById('entities');
+  var wordFreq = document.getElementById('word-freq');
+  var sentimentTable = document.getElementById('sentiment-table');
+
+  // Marked up
+  output.innerHTML = info.taggedText;
+
+  // Entitiy list
+  entities.innerHTML = '';
+  info.entities.forEach( function (e) {
+    entities.innerHTML += '<li class="' + e.type + '">' + e.value + '</li>';
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  var entities = document.getElementById('entities');
+  var wordFreq = document.getElementById('word-freq');
+  var sentimentTable = document.getElementById('sentiment-table');
+
+  // Marked up
+  output.innerHTML = info.taggedText;
+
+  // Entitiy list
+  entities.innerHTML = '';
+  info.entities.forEach( function (e) {
+    entities.innerHTML += '<li class="' + e.type + '"><script>alert("XSS")</script>' + e.value + '</li>';
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

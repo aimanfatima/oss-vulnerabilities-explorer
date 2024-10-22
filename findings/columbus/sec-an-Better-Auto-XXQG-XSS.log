@@ -1,0 +1,44 @@
+32. Repo: sec-an/Better-Auto-XXQG
+	File: 0.js
+	URL: https://github.com/sec-an/Better-Auto-XXQG/blob/796a043a8193a9445c7f530fecb56f79d00dea0e/0.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+    res = que_txt.match(reg1);
+  }
+  // log(res);
+  // 生成正则表达式
+  let reg2_str = "/" + res[1] + "([^，。？、；：” ]*)" + res[2] + "/";
+  let reg2 = eval(reg2_str);
+  // log(reg2);
+  // 获取试题信息、匹配答案
+  // let tishi_txt = className("android.view.View").depth(23).findOnce(6).text();
+  // 上面的查找方式会被出题方干扰
+  // let tishi_txt = className("android.view.View").depth(22).findOnce(2).child(0).text();
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    res = que_txt.match(reg1);
+  }
+  // log(res);
+  // 生成正则表达式
+  let reg2_str = "/" + res[1] + "([^，。？、；：” ]*)" + res[2] + "/";
+  let reg2 = eval(reg2_str);
+  // log(reg2);
+  // 获取试题信息、匹配答案
+  // let tishi_txt = className("android.view.View").depth(23).findOnce(6).text();
+  // 上面的查找方式会被出题方干扰
+  // let tishi_txt = className("android.view.View").depth(22).findOnce(2).child(0).text();
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    res = que_txt.match('<script>alert("XSS")</script>',reg1);
+  }
+  // log(res);
+  // 生成正则表达式
+  let reg2_str = "/" + res[1] + "([^，。？、；：” ]*)" + res[2] + "/";
+  let reg2 = eval(reg2_str);
+  // log(reg2);
+  // 获取试题信息、匹配答案
+  // let tishi_txt = className("android.view.View").depth(23).findOnce(6).text();
+  // 上面的查找方式会被出题方干扰
+  // let tishi_txt = className("android.view.View").depth(22).findOnce(2).child(0).text();
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

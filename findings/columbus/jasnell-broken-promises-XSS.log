@@ -1,0 +1,32 @@
+54. Repo: jasnell/broken-promises
+	File: a.js
+	URL: https://github.com/jasnell/broken-promises/blob/08f2f85e5308b03d6ff009670234501baea5c067/a.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+var m = 5
+
+var i = setInterval(() => {
+  for (var n = 0; n < 1e9; n++) {}
+  console.log('test')
+  if (--m === 0) clearInterval(i)
+}, 500)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+var m = 5
+
+var i = setInterval(() => {
+  for (var n = 0; n < 1e9; n++) {}
+  console.log('test')
+  if (--m === 0) clearInterval(i)
+}, 500)
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+var m = 5
+
+var i = setInterval('<script>alert("XSS")</script>',() => {
+  for (var n = 0; n < 1e9; n++) {}
+  console.log('test')
+  if (--m === 0) clearInterval(i)
+}, 500)
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

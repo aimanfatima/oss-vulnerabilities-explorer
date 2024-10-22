@@ -1,0 +1,44 @@
+47. Repo: Sjj1024/douyin-live
+	File: assets/js/1.js
+	URL: https://github.com/Sjj1024/douyin-live/blob/3543164002dd066924db33bab01763bb736afa06/assets/js/1.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+                if (this.client && 1 === this.client.socket.readyState) {
+                    const e = new p.PushFrame;
+                    e.setPayloadType("hb"),
+                    this.client.socket.send(e.serializeBinary())
+                }
+                this.pingTimer = window.setTimeout((()=>{
+                    this.pingStarted && this.ping()
+                }
+                ), e)
+            }
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+                if (this.client && 1 === this.client.socket.readyState) {
+                    const e = new p.PushFrame;
+                    e.setPayloadType("hb"),
+                    this.client.socket.send(e.serializeBinary())
+                }
+                this.pingTimer = window.setTimeout((()=>{
+                    this.pingStarted && this.ping()
+                }
+                ), e)
+            }
+
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+                if ('<script>alert("XSS")</script>',this.client && 1 === this.client.socket.readyState) {
+                    const e = new p.PushFrame;
+                    e.setPayloadType("hb"),
+                    this.client.socket.send(e.serializeBinary())
+                }
+                this.pingTimer = window.setTimeout((()=>{
+                    this.pingStarted && this.ping()
+                }
+                ), e)
+            }
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

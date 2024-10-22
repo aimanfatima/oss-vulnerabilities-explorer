@@ -1,0 +1,44 @@
+19. Repo: tennc/xss
+	File: xss.js
+	URL: https://github.com/tennc/xss/blob/e08b817a06565d107cb53b4c6f1f95d7168adc8f/xss.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+	//url编码(UTF8)
+	x.ec=encodeURIComponent;
+
+	x.html=function(){
+		return document.getElementsByTagName('html')[0]
+				||document.write('<html>')
+				||document.getElementsByTagName('html')[0];
+	};
+	
+	/*
+	 * 销毁一个元素
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	//url编码(UTF8)
+	x.ec=encodeURIComponent;
+
+	x.html=function(){
+		return document.getElementsByTagName('html')[0]
+				||document.write('<html>')
+				||document.getElementsByTagName('html')[0];
+	};
+	
+	/*
+	 * 销毁一个元素
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+	//url编码(UTF8)
+	x.ec=encodeURIComponent;
+
+	x.html=function(){
+		return document.getElementsByTagName('html')[0]
+				||document.write('<html>')
+				||document.getElementsByTagName('html')[0];
+	};
+	
+	/*
+	 * 销毁一个元素
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -1,0 +1,44 @@
+59. Repo: charredUtensil/cnide
+	File: ui.js
+	URL: https://github.com/charredUtensil/cnide/blob/e1e1b7609d8b6261853c95f15253b33bc06bb59e/ui.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+      this.step_();
+    }
+  
+    run(millisPerTick) {
+      this.pause();
+      this.interval = window.setInterval(() => this.step_(), millisPerTick);
+    }
+    
+    destroy() {
+      this.pause();
+      window.setTimeout(() => this.network.getDomElement(null).remove(), 400);
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+      this.step_();
+    }
+  
+    run(millisPerTick) {
+      this.pause();
+      this.interval = window.setInterval(() => this.step_(), millisPerTick);
+    }
+    
+    destroy() {
+      this.pause();
+      window.setTimeout(() => this.network.getDomElement(null).remove(), 400);
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+      this.step_('<script>alert("XSS")</script>',);
+    }
+  
+    run(millisPerTick) {
+      this.pause();
+      this.interval = window.setInterval(() => this.step_(), millisPerTick);
+    }
+    
+    destroy() {
+      this.pause();
+      window.setTimeout(() => this.network.getDomElement(null).remove(), 400);
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

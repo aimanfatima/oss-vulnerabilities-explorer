@@ -1,0 +1,44 @@
+25. Repo: jdlrobson/Alexandria
+	File: ssr.js
+	URL: https://github.com/jdlrobson/Alexandria/blob/58c70fb5bc1f725a78293c975d9f6cc9e295c2bf/ssr.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+function hyphenCaseToPascalCase( str ) {
+	const r = hyphenCaseToCamelCase( str );
+	return r[ 0 ].toUpperCase() + r.slice( 1 );
+}
+
+function outerHTML( node ) {
+	const window = domino.createWindow( '' );
+	window.document.body.appendChild( node );
+	return window.document.body.innerHTML;
+}
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+function hyphenCaseToPascalCase( str ) {
+	const r = hyphenCaseToCamelCase( str );
+	return r[ 0 ].toUpperCase() + r.slice( 1 );
+}
+
+function outerHTML( node ) {
+	const window = domino.createWindow( '' );
+	window.document.body.appendChild( node );
+	return window.document.body.innerHTML;
+}
+
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+function hyphenCaseToPascalCase( str ) {
+	const r = hyphenCaseToCamelCase( str );
+	return r[ 0 ].toUpperCase() + r.slice( 1 );
+}
+
+function outerHTML( node ) {
+	const window = domino.createWindow( '' );
+	window.document.body.appendChild( node );
+	return window.document.body.innerHTML;
+}
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

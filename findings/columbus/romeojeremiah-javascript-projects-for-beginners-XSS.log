@@ -1,0 +1,35 @@
+31. Repo: romeojeremiah/javascript-projects-for-beginners
+	File: Desktop Calculator/app.js
+	URL: https://github.com/romeojeremiah/javascript-projects-for-beginners/blob/6f92f4b1f7bc24c3488199d5ed53034d714287aa/Desktop%20Calculator/app.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+//display property
+//onclick event
+//eval() function
+//assignment operator
+//
+
+
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+//display property
+//onclick event
+//eval() function
+//assignment operator
+//
+
+
+
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+//display property
+//onclick event
+//eval('<script>alert("XSS")</script>',) function
+//assignment operator
+//
+
+
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

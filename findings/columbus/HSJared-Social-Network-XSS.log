@@ -1,0 +1,44 @@
+14. Repo: HSJared/Social-Network
+	File: js.js
+	URL: https://github.com/HSJared/Social-Network/blob/ed4fc8cd7c4a925991af3f085d05be55a0100b51/js.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+/***Prints The Days on the Registration Form***/
+function printDays()
+{
+for(i=0;i<31;i++){ 
+var dateVar = 1 + i; 
+document.write('<option value=\"' + dateVar + '\">' + dateVar + '</option>'); 
+}
+}
+
+/***Prints The Years on the Registration Form***/
+function printYears()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+/***Prints The Days on the Registration Form***/
+function printDays()
+{
+for(i=0;i<31;i++){ 
+var dateVar = 1 + i; 
+document.write('<option value=\"' + dateVar + '\">' + dateVar + '</option>'); 
+}
+}
+
+/***Prints The Years on the Registration Form***/
+function printYears()
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+/***Prints The Days on the Registration Form***/
+function printDays()
+{
+for(i=0;i<31;i++){ 
+var dateVar = 1 + i; 
+document.write('<option value=\"' + dateVar + '\"><script>alert("XSS")</script>' + dateVar + '</option>'); 
+}
+}
+
+/***Prints The Years on the Registration Form***/
+function printYears()
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -1,0 +1,35 @@
+57. Repo: ivanseidel/IAMDinosaur
+	File: UI.js
+	URL: https://github.com/ivanseidel/IAMDinosaur/blob/a3737740ad6e18eb3260f9c32d1070102abc4f5e/UI.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+  // Render screen
+  screen.render();
+}
+
+// Continuously render screen
+setInterval(UI.render, 25);
+
+module.exports = UI;
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  // Render screen
+  screen.render();
+}
+
+// Continuously render screen
+setInterval(UI.render, 25);
+
+module.exports = UI;
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  // Render screen
+  screen.render('<script>alert("XSS")</script>',);
+}
+
+// Continuously render screen
+setInterval(UI.render, 25);
+
+module.exports = UI;
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

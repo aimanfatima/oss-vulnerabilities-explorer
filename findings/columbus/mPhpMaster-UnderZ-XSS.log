@@ -1,0 +1,44 @@
+30. Repo: mPhpMaster/UnderZ
+	File: _z.js
+	URL: https://github.com/mPhpMaster/UnderZ/blob/0cdd57216db7ff3f8eee4778ee6adf55699fa742/_z.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+
+            var $return = [];
+            elmFunc.elmLoop(elm, function (e) {
+                var tn;
+                if (e['tagName'] && (tn = e.tagName.toLowerCase()) ||
+                    e['outerHTML'] && (tn = (/<([\w:]+)/.exec(e.outerHTML) ||
+                        ["", ""])[1].toLowerCase()))
+                    if (_z.isFunction(filter) && filter.callSelf(tn) || !_z.isFunction(filter))
+                        $return.push(tn);
+            });
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+            var $return = [];
+            elmFunc.elmLoop(elm, function (e) {
+                var tn;
+                if (e['tagName'] && (tn = e.tagName.toLowerCase()) ||
+                    e['outerHTML'] && (tn = (/<([\w:]+)/.exec(e.outerHTML) ||
+                        ["", ""])[1].toLowerCase()))
+                    if (_z.isFunction(filter) && filter.callSelf(tn) || !_z.isFunction(filter))
+                        $return.push(tn);
+            });
+
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+
+            var $return = [];
+            elmFunc.elmLoop(elm, function (e) {
+                var tn;
+                if (e['tagName'] && (tn = e.tagName.toLowerCase()) ||
+                    e['outerHTML'] && (tn = (/<([\w:]+)/.exec(e.outerHTML) ||
+                        ["", ""])[1].toLowerCase()))
+                    if (_z.isFunction(filter) && filter.callSelf(tn) || !_z.isFunction(filter))
+                        $return.push(tn);
+            });
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

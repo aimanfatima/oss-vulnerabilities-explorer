@@ -1,0 +1,44 @@
+44. Repo: xem/W
+	File: w.js
+	URL: https://github.com/xem/W/blob/c5b6fb7d6937d43b1596dded857acade426bd631/w.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+    // When everything is loaded: set default light / camera
+    W.light({y: -1});
+    W.camera({fov: 30});
+    
+    // Draw the scene. Ignore the first frame because the default camera will probably be overwritten by the program
+    setTimeout(W.draw, 16);
+  },
+
+  // Set a state to an object
+  setState: (state, type, texture, i, normal = [], A, B, C, Ai, Bi, Ci, AB, BC) => {
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    // When everything is loaded: set default light / camera
+    W.light({y: -1});
+    W.camera({fov: 30});
+    
+    // Draw the scene. Ignore the first frame because the default camera will probably be overwritten by the program
+    setTimeout(W.draw, 16);
+  },
+
+  // Set a state to an object
+  setState: (state, type, texture, i, normal = [], A, B, C, Ai, Bi, Ci, AB, BC) => {
+
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    // When everything is loaded: set default light / camera
+    W.light('<script>alert("XSS")</script>',{y: -1});
+    W.camera({fov: 30});
+    
+    // Draw the scene. Ignore the first frame because the default camera will probably be overwritten by the program
+    setTimeout(W.draw, 16);
+  },
+
+  // Set a state to an object
+  setState: (state, type, texture, i, normal = [], A, B, C, Ai, Bi, Ci, AB, BC) => {
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

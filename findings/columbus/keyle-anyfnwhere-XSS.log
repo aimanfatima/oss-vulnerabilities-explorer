@@ -1,0 +1,44 @@
+22. Repo: keyle/anyfnwhere
+	File: libs/knot.js
+	URL: https://github.com/keyle/anyfnwhere/blob/b284302a504e4424ee5bcee19dac5e71f6aeba93/libs/knot.js
+	Vulnerable Pattern: outerHTML
+	Attack Description: outerHTML injects HTML into the DOM, allowing attackers to replace elements with malicious code.
+	Vulnerable Code Snippet:
+	}
+
+	function bindSingle(that)
+	{
+		// replace the inside of whatever the data-bind tag has
+		var element = $(that).outerHTML();
+		var modelElement = $(that).attr('data-bind');
+
+		// do we have a converter or string format?
+		if(modelElement.indexOf('.') != -1)
+		{
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	}
+
+	function bindSingle(that)
+	{
+		// replace the inside of whatever the data-bind tag has
+		var element = $(that).outerHTML();
+		var modelElement = $(that).attr('data-bind');
+
+		// do we have a converter or string format?
+		if(modelElement.indexOf('.') != -1)
+		{
+			2. An attacker could inject a malicious script where the `outerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+	}
+
+	function bindSingle(that)
+	{
+		// replace the inside of whatever the data-bind tag has
+		var element = $(that).outerHTML();
+		var modelElement = $(that).attr('data-bind');
+
+		// do we have a converter or string format?
+		if(modelElement.indexOf('.') != -1)
+		{
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

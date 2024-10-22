@@ -1,0 +1,41 @@
+42. Repo: i5ting/asynchronous-flow-control
+	File: 2.js
+	URL: https://github.com/i5ting/asynchronous-flow-control/blob/6946a23a85e8f8acc3a85b49d5c1a15ae5378d83/2.js
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+import test from 'ava';
+const exec = require('child_process').exec
+
+test.cb('error-first callback with setTimeout', t => {
+    setTimeout(() => {
+      t.pass();
+      t.end();
+    }, 2000);
+});
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+import test from 'ava';
+const exec = require('child_process').exec
+
+test.cb('error-first callback with setTimeout', t => {
+    setTimeout(() => {
+      t.pass();
+      t.end();
+    }, 2000);
+});
+
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+import test from 'ava';
+const exec = require('<script>alert("XSS")</script>','child_process').exec
+
+test.cb('error-first callback with setTimeout', t => {
+    setTimeout(() => {
+      t.pass();
+      t.end();
+    }, 2000);
+});
+
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

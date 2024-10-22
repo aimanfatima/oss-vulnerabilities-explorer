@@ -1,0 +1,41 @@
+53. Repo: libp2p/js-libp2p-examples
+	File: examples/js-libp2p-example-pubsub/1.js
+	URL: https://github.com/libp2p/js-libp2p-examples/blob/80bdaa7bc11750df6d037a4cf8b3f37ac8c921a4/examples/js-libp2p-example-pubsub/1.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+node2.services.pubsub.addEventListener('message', (evt) => {
+  console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
+})
+
+// node2 publishes "news" every second
+setInterval(() => {
+  node2.services.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+    console.error(err)
+  })
+}, 1000)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+node2.services.pubsub.addEventListener('message', (evt) => {
+  console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
+})
+
+// node2 publishes "news" every second
+setInterval(() => {
+  node2.services.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+    console.error(err)
+  })
+}, 1000)
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+node2.services.pubsub.addEventListener('<script>alert("XSS")</script>','message', (evt) => {
+  console.log(`node2 received: ${uint8ArrayToString(evt.detail.data)} on topic ${evt.detail.topic}`)
+})
+
+// node2 publishes "news" every second
+setInterval(() => {
+  node2.services.pubsub.publish(topic, uint8ArrayFromString('Bird bird bird, bird is the word!')).catch(err => {
+    console.error(err)
+  })
+}, 1000)
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.
