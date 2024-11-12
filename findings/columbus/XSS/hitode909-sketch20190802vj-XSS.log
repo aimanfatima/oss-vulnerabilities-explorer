@@ -1,0 +1,35 @@
+59. Repo: hitode909/sketch20190802vj
+	File: 4.js
+	URL: https://github.com/hitode909/sketch20190802vj/blob/c0f52833ad914d1b07b5cb05ce819e3aacdba5ea/4.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+
+const step = () => {
+    char.textContent = nextEmoji();
+};
+
+setInterval(() => {
+    step();
+}, 20)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+const step = () => {
+    char.textContent = nextEmoji();
+};
+
+setInterval(() => {
+    step();
+}, 20)
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+
+const step = ('<script>alert("XSS")</script>',) => {
+    char.textContent = nextEmoji();
+};
+
+setInterval(() => {
+    step();
+}, 20)
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

@@ -1,0 +1,44 @@
+10. Repo: surajondev/JavaScript
+	File: JavaScript BMI Calculator/script.js
+	URL: https://github.com/surajondev/JavaScript/blob/222cff1f5b5e87d3d7bc91f02f26189fcd9cd22b/JavaScript%20BMI%20Calculator/script.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+    var weight = document.getElementById("w-input").value;
+
+    var result = parseFloat(weight) /(parseFloat(height)/100)**2;
+
+    if(!isNaN(result)){
+        document.getElementById("bmi-output").innerHTML = result;
+        if(result < 18.5){
+            document.getElementById("bmi-status").innerHTML = "Underweight";
+        }
+        else if(result < 25){
+            document.getElementById("bmi-status").innerHTML = "Healthy";
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    var weight = document.getElementById("w-input").value;
+
+    var result = parseFloat(weight) /(parseFloat(height)/100)**2;
+
+    if(!isNaN(result)){
+        document.getElementById("bmi-output").innerHTML = result;
+        if(result < 18.5){
+            document.getElementById("bmi-status").innerHTML = "Underweight";
+        }
+        else if(result < 25){
+            document.getElementById("bmi-status").innerHTML = "Healthy";
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    var weight = document.getElementById("w-input").value;
+
+    var result = parseFloat(weight) /(parseFloat(height)/100)**2;
+
+    if(!isNaN(result)){
+        document.getElementById("bmi-output").innerHTML = result;
+        if(result < 18.5){
+            document.getElementById("bmi-status").innerHTML = "Underweight";
+        }
+        else if(result < 25){
+            document.getElementById("bmi-status").innerHTML = "Healthy";
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

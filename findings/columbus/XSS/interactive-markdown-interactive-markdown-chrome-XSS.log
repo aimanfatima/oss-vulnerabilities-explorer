@@ -1,0 +1,35 @@
+36. Repo: interactive-markdown/interactive-markdown-chrome
+	File: app.js
+	URL: https://github.com/interactive-markdown/interactive-markdown-chrome/blob/53af89b1b7fbd3e5e52fdc9ce096eb38e1c23208/app.js
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+  //   console.debug("@@@", $(this).parent().parent().children(".codeblock-editor-wrapper").children(".codeblock-editor .ace_editor .ace_nobold .ace-dawn").codeblock(), "###");//.editor.getValue()
+  // });
+
+   // var request = $.ajax({ type: 'GET', url: encodeURI('https://api.uwaterloo.ca/v2/weather/current.json'), async : false });
+   // console.log(request.responseText)
+   // eval("alert(10)");
+
+});
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  //   console.debug("@@@", $(this).parent().parent().children(".codeblock-editor-wrapper").children(".codeblock-editor .ace_editor .ace_nobold .ace-dawn").codeblock(), "###");//.editor.getValue()
+  // });
+
+   // var request = $.ajax({ type: 'GET', url: encodeURI('https://api.uwaterloo.ca/v2/weather/current.json'), async : false });
+   // console.log(request.responseText)
+   // eval("alert(10)");
+
+});
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+  //   console.debug('<script>alert("XSS")</script>',"@@@", $(this).parent().parent().children(".codeblock-editor-wrapper").children(".codeblock-editor .ace_editor .ace_nobold .ace-dawn").codeblock(), "###");//.editor.getValue()
+  // });
+
+   // var request = $.ajax({ type: 'GET', url: encodeURI('https://api.uwaterloo.ca/v2/weather/current.json'), async : false });
+   // console.log(request.responseText)
+   // eval("alert(10)");
+
+});
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

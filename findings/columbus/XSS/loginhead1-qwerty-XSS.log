@@ -1,0 +1,44 @@
+58. Repo: loginhead1/qwerty
+	File: 1.js
+	URL: https://github.com/loginhead1/qwerty/blob/bb6d960277ad9416ade927b0f3ebb3fead3028c9/1.js
+	Vulnerable Pattern: setInterval(
+	Attack Description: setInterval can execute untrusted code repeatedly, making it vulnerable to persistent XSS attacks.
+	Vulnerable Code Snippet:
+        return;
+    }
+
+    if (ctx.isChat) {
+    	console.log(`deadrose bot >> New chat has been attacked.`.green.bold);
+        setInterval(() => {
+            ctx.send({
+                message: randomFromArray(CHAT_SPAM),
+                keyboard: Keyboard.keyboard(
+                    Array(10).fill().map(() => 
+                       Array(4).fill().map(() => button(randomFromArray(BTN_TEXT)))
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        return;
+    }
+
+    if (ctx.isChat) {
+    	console.log(`deadrose bot >> New chat has been attacked.`.green.bold);
+        setInterval(() => {
+            ctx.send({
+                message: randomFromArray(CHAT_SPAM),
+                keyboard: Keyboard.keyboard(
+                    Array(10).fill().map(() => 
+                       Array(4).fill().map(() => button(randomFromArray(BTN_TEXT)))
+			2. An attacker could inject a malicious script where the `setInterval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+        return;
+    }
+
+    if ('<script>alert("XSS")</script>',ctx.isChat) {
+    	console.log(`deadrose bot >> New chat has been attacked.`.green.bold);
+        setInterval(() => {
+            ctx.send({
+                message: randomFromArray(CHAT_SPAM),
+                keyboard: Keyboard.keyboard(
+                    Array(10).fill().map(() => 
+                       Array(4).fill().map(() => button(randomFromArray(BTN_TEXT)))
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

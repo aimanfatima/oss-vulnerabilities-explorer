@@ -1,0 +1,44 @@
+50. Repo: eces/select
+	File: cli
+	URL: https://github.com/eces/select/blob/0808ea7770e31749a3dcbb54f05bfc24937c8d14/cli
+	Vulnerable Pattern: setTimeout(
+	Attack Description: setTimeout can execute a string of code after a delay, providing an opportunity for injecting malicious scripts.
+	Vulnerable Code Snippet:
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const {glob} = require('glob')
+
+setTimeout(async () => {
+  try {
+    const boxen = (await import('boxen')).default
+    const chalk = require('chalk')
+    const pj = (await import('package-json')).default
+    const latest = await pj('selectfromuser')
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+const path = require('path')
+const fs = require('fs')
+const os = require('os')
+const {glob} = require('glob')
+
+setTimeout(async () => {
+  try {
+    const boxen = (await import('boxen')).default
+    const chalk = require('chalk')
+    const pj = (await import('package-json')).default
+    const latest = await pj('selectfromuser')
+			2. An attacker could inject a malicious script where the `setTimeout(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+const path = require('<script>alert("XSS")</script>','path')
+const fs = require('fs')
+const os = require('os')
+const {glob} = require('glob')
+
+setTimeout(async () => {
+  try {
+    const boxen = (await import('boxen')).default
+    const chalk = require('chalk')
+    const pj = (await import('package-json')).default
+    const latest = await pj('selectfromuser')
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

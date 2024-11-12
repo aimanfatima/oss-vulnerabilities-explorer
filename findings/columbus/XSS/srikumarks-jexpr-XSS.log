@@ -1,0 +1,44 @@
+40. Repo: srikumarks/jexpr
+	File: jx
+	URL: https://github.com/srikumarks/jexpr/blob/bfbe57b5e1ef84fd4dc153068b7bf209603d89d9/jx
+	Vulnerable Pattern: eval(
+	Attack Description: eval() executes strings as JavaScript code, making it highly susceptible to code injection.
+	Vulnerable Code Snippet:
+    if (parse_only) {
+        process.stdout.write(JSON.stringify(all_exprs));
+    } else {
+        var rt = J.runtime();
+        if (exprs_to_run.length > 0) {
+            J.eval({do: exprs_to_run}, rt);
+        }
+        if (exprs_to_compile.length > 0) {
+            process.stdout.write(J.compile_to_js({do: exprs_to_compile}));
+        }
+    }
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    if (parse_only) {
+        process.stdout.write(JSON.stringify(all_exprs));
+    } else {
+        var rt = J.runtime();
+        if (exprs_to_run.length > 0) {
+            J.eval({do: exprs_to_run}, rt);
+        }
+        if (exprs_to_compile.length > 0) {
+            process.stdout.write(J.compile_to_js({do: exprs_to_compile}));
+        }
+    }
+			2. An attacker could inject a malicious script where the `eval(` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+    if ('<script>alert("XSS")</script>',parse_only) {
+        process.stdout.write(JSON.stringify(all_exprs));
+    } else {
+        var rt = J.runtime();
+        if (exprs_to_run.length > 0) {
+            J.eval({do: exprs_to_run}, rt);
+        }
+        if (exprs_to_compile.length > 0) {
+            process.stdout.write(J.compile_to_js({do: exprs_to_compile}));
+        }
+    }
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

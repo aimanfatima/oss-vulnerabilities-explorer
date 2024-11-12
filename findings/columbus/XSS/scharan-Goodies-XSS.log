@@ -1,0 +1,32 @@
+19. Repo: scharan/Goodies
+	File: hn.js
+	URL: https://github.com/scharan/Goodies/blob/950ba6c5d19adb76d1e03a95743d98232af8ae4d/hn.js
+	Vulnerable Pattern: document.write
+	Attack Description: document.write injects content into the DOM, which can be exploited to add malicious JavaScript code.
+	Vulnerable Code Snippet:
+else { 
+	hn_link += "&t=" + encodeURIComponent(document.title);
+}
+
+var write_string = "<a href="+hn_link+"><img src='http://ycombinator.com/images/y18.gif' alt='Hacker News' width=18 height=18 style='border:1px #ffffff solid;'/></a><a href="+hn_link+" alink='#000000'; vlink='#828282' style='text-decoration:none' target='_blank'><span style='font-family:Verdana; font-size: 10pt; color:#828282;'><b>Submit</b></span></a>";
+document.write(write_string);
+})()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+else { 
+	hn_link += "&t=" + encodeURIComponent(document.title);
+}
+
+var write_string = "<a href="+hn_link+"><img src='http://ycombinator.com/images/y18.gif' alt='Hacker News' width=18 height=18 style='border:1px #ffffff solid;'/></a><a href="+hn_link+" alink='#000000'; vlink='#828282' style='text-decoration:none' target='_blank'><span style='font-family:Verdana; font-size: 10pt; color:#828282;'><b>Submit</b></span></a>";
+document.write(write_string);
+})()
+			2. An attacker could inject a malicious script where the `document.write` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+else { 
+	hn_link += "&t=" + encodeURIComponent(document.title);
+}
+
+var write_string = "<a href="+hn_link+"><script>alert("XSS")</script><img src='http://ycombinator.com/images/y18.gif' alt='Hacker News' width=18 height=18 style='border:1px #ffffff solid;'/></a><a href="+hn_link+" alink='#000000'; vlink='#828282' style='text-decoration:none' target='_blank'><span style='font-family:Verdana; font-size: 10pt; color:#828282;'><b>Submit</b></span></a>";
+document.write(write_string);
+})()
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.

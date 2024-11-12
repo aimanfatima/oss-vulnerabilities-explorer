@@ -169,6 +169,12 @@ class Columbus:
                 file_url = item['html_url']
                 # Fetch the raw file content to analyze further
                 file_content = self.fetch_raw_file_content(repo_name, file_name)
+
+                # Skip empty or non-standard .env files (e.g., those without any '=' character)
+                if file_content and '=' not in file_content:
+                    print(f"Skipping {file_name} in repo {repo_name} as it does not contain any environment variables.")
+                    continue
+
                 if file_content:
                     findings.append({
                         "vulnerability": "env-leak",

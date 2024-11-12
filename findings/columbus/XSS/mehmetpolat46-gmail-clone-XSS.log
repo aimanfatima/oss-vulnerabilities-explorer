@@ -1,0 +1,44 @@
+9. Repo: mehmetpolat46/gmail-clone
+	File: ui.js
+	URL: https://github.com/mehmetpolat46/gmail-clone/blob/5ca522fa3767d36439da0fd1ca09f9c8ee3b0bd3/ui.js
+	Vulnerable Pattern: innerHTML
+	Attack Description: innerHTML allows direct injection of untrusted input into the DOM, enabling attackers to insert malicious scripts.
+	Vulnerable Code Snippet:
+
+export function renderMails(outlet, data) {
+  if (!data) return;
+  // herbir mail objesi için bir maili temsil edem html oluştur
+  // oluşan mail htmlini mailler alanına gönderme
+  outlet.innerHTML = data
+    .map(
+      (mail) => `
+             <div class="mail" data-id=${mail.id}>
+                    <div class="left">
+                        <input type="checkbox">
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+export function renderMails(outlet, data) {
+  if (!data) return;
+  // herbir mail objesi için bir maili temsil edem html oluştur
+  // oluşan mail htmlini mailler alanına gönderme
+  outlet.innerHTML = data
+    .map(
+      (mail) => `
+             <div class="mail" data-id=${mail.id}>
+                    <div class="left">
+                        <input type="checkbox">
+			2. An attacker could inject a malicious script where the `innerHTML` pattern is used, exploiting this specific function in the code.
+			3. For instance, an attacker might craft a payload like `<script>alert('XSS')</script>`, which would get injected here:
+
+export function renderMails(outlet, data) {
+  if (!data) return;
+  // herbir mail objesi için bir maili temsil edem html oluştur
+  // oluşan mail htmlini mailler alanına gönderme
+  outlet.innerHTML = data
+    .map(
+      (mail) => `
+             <div class="mail" data-id=${mail.id}>
+                    <div class="left"><script>alert("XSS")</script>
+                        <input type="checkbox">
+			4. When the browser renders this code, the malicious script executes, leading to an XSS attack.
