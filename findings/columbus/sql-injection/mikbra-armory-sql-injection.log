@@ -1,0 +1,33 @@
+99. Repo: mikbra/armory
+	File: army
+	URL: https://github.com/mikbra/armory/blob/222e549fbf2cf89a874cad96a8bb7edd186e4800/army
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+#Register commands
+cmd_init.init(context)
+cmd_push.init(context)
+cmd_branch.init(context)
+
+context.execute();
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+#Register commands
+cmd_init.init(context)
+cmd_push.init(context)
+cmd_branch.init(context)
+
+context.execute();
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

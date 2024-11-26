@@ -1,0 +1,43 @@
+122. Repo: vzxwco/neap
+	File: neap
+	URL: https://github.com/vzxwco/neap/blob/0645ffb825176f481ba997e9e9eb937490475df6/neap
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+        '''Returns a list containing desktop names.'''
+
+        count = self.get_desktop_count()
+        names = []
+        for i in range(count):
+            names.append('Workspace {0}'.format(i+1))
+
+        return names
+
+    def switch_desktop(self, num):
+        '''Sets the active desktop to num.'''
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        '''Returns a list containing desktop names.'''
+
+        count = self.get_desktop_count()
+        names = []
+        for i in range(count):
+            names.append('Workspace {0}'.format(i+1))
+
+        return names
+
+    def switch_desktop(self, num):
+        '''Sets the active desktop to num.'''
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

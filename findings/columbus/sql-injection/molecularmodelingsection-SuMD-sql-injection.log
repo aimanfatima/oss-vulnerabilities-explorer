@@ -1,0 +1,42 @@
+177. Repo: molecularmodelingsection/SuMD
+	File: suMD
+	URL: https://github.com/molecularmodelingsection/SuMD/blob/978642fcaa73a7db6a4012dbc588c1cc6dd81044/suMD
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+        self.structure = parsePDB(self.structuref,ag=ag)
+        self.step = step
+
+
+    def distance_pdb(self, fdistance):
+        binding_site = self.structure.select("{} and resid {} and not ({}) and not water".format(str(self.main_ch),(self.site), self.lig))
+        lig_cm_sel = self.structure.select("{} and ({})".format(str(self.lig_ch), self.lig_cm))
+        binding_center = calcCenter(binding_site)
+        lig_center = calcCenter(lig_cm_sel)
+        cm_dist0 = calcDistance(binding_center, lig_center)
+        out_file = open(fdistance, "w")
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        self.structure = parsePDB(self.structuref,ag=ag)
+        self.step = step
+
+
+    def distance_pdb(self, fdistance):
+        binding_site = self.structure.select("{} and resid {} and not ({}) and not water".format(str(self.main_ch),(self.site), self.lig))
+        lig_cm_sel = self.structure.select("{} and ({})".format(str(self.lig_ch), self.lig_cm))
+        binding_center = calcCenter(binding_site)
+        lig_center = calcCenter(lig_cm_sel)
+        cm_dist0 = calcDistance(binding_center, lig_center)
+        out_file = open(fdistance, "w")
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

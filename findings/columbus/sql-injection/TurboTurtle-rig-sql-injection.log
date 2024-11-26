@@ -1,0 +1,39 @@
+21. Repo: TurboTurtle/rig
+	File: rig
+	URL: https://github.com/TurboTurtle/rig/blob/82b36d9f008b4d816fe327c34256e822a618c5a9/rig
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        if args['subcmd'] in rig_cmds:
+            if rig_cmds[args['subcmd']].root_required:
+                if not os.getuid() == 0:
+                    raise PermissionError("Command requires root privileges")
+            rig = rig_cmds[args['subcmd']](args)
+            rig.execute()
+    except Exception as err:
+        print(f"{err}")
+        sys.exit(1)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        if args['subcmd'] in rig_cmds:
+            if rig_cmds[args['subcmd']].root_required:
+                if not os.getuid() == 0:
+                    raise PermissionError("Command requires root privileges")
+            rig = rig_cmds[args['subcmd']](args)
+            rig.execute()
+    except Exception as err:
+        print(f"{err}")
+        sys.exit(1)
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

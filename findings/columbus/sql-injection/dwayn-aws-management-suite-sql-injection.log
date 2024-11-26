@@ -1,0 +1,42 @@
+15. Repo: dwayn/aws-management-suite
+	File: ams
+	URL: https://github.com/dwayn/aws-management-suite/blob/126239d95976c9e939e09e28cd02dc3e03d944c8/ams
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        filename = pathstub + filename_stub + str(i) + extension
+        sqlfile = open(filename, "r")
+        sqlcontents = sqlfile.read()
+        statements = sqlcontents.split("\n\n--\n\n")
+        for sql in statements:
+            db.execute(sql)
+            dbconn.commit()
+
+        db.execute("insert into config set var=%s, value=%s on duplicate key update value=%s", ('DATABASE_VERSION', str(i), str(i)))
+        dbconn.commit()
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        filename = pathstub + filename_stub + str(i) + extension
+        sqlfile = open(filename, "r")
+        sqlcontents = sqlfile.read()
+        statements = sqlcontents.split("\n\n--\n\n")
+        for sql in statements:
+            db.execute(sql)
+            dbconn.commit()
+
+        db.execute("insert into config set var=%s, value=%s on duplicate key update value=%s", ('DATABASE_VERSION', str(i), str(i)))
+        dbconn.commit()
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

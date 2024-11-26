@@ -1,0 +1,43 @@
+121. Repo: bhattlab/scg_tools
+	File: ssub
+	URL: https://github.com/bhattlab/scg_tools/blob/ed08d5aa402bc6efcf09612e6ae7364319a473b3/ssub
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+parser.add_argument('-debug', action='store_true',
+                    help='Print sbatch command before executing.')
+
+args = parser.parse_args()
+
+sub = 'sbatch -J {jobname} -t {time_alloc}:00:00 -p {batch} -n {ntasks}  -c {cpus_per_task} --mem={mem} -A {acct} -o {jobname}.out -e {jobname}.err --wrap="{command}"'.format(
+    batch = 'nih_s10' if args.nih else 'batch',
+    jobname = args.n,
+    time_alloc = args.t,
+    ntasks = args.ntasks, 
+    mem = int(args.m)*1000,
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+parser.add_argument('-debug', action='store_true',
+                    help='Print sbatch command before executing.')
+
+args = parser.parse_args()
+
+sub = 'sbatch -J {jobname} -t {time_alloc}:00:00 -p {batch} -n {ntasks}  -c {cpus_per_task} --mem={mem} -A {acct} -o {jobname}.out -e {jobname}.err --wrap="{command}"'.format(
+    batch = 'nih_s10' if args.nih else 'batch',
+    jobname = args.n,
+    time_alloc = args.t,
+    ntasks = args.ntasks, 
+    mem = int(args.m)*1000,
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

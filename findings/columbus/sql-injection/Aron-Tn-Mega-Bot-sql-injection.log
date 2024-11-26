@@ -1,0 +1,43 @@
+25. Repo: Aron-Tn/Mega-Bot
+	File: v2.py
+	URL: https://github.com/Aron-Tn/Mega-Bot/blob/01d15afcc1f5bd16e9951031d407be10bd9bb954/v2.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+             sys.exit()
+     def cls(self):
+         linux = 'clear'
+         windows = 'cls'
+         os.system([linux, windows][os.name == 'nt'])
+     def cur_execute(self, data, args=()):
+         connection = sqlite3.connect("files/Database.sqlite3")
+         with connection:
+             cur = connection.cursor()
+             cur.execute(data, args)
+             connection.commit()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+             sys.exit()
+     def cls(self):
+         linux = 'clear'
+         windows = 'cls'
+         os.system([linux, windows][os.name == 'nt'])
+     def cur_execute(self, data, args=()):
+         connection = sqlite3.connect("files/Database.sqlite3")
+         with connection:
+             cur = connection.cursor()
+             cur.execute(data, args)
+             connection.commit()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

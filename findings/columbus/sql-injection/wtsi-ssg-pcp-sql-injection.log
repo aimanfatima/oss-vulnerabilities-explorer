@@ -1,0 +1,43 @@
+19. Repo: wtsi-ssg/pcp
+	File: pcp
+	URL: https://github.com/wtsi-ssg/pcp/blob/e19b79070d644dba1e55de7947206fb5d6b380a5/pcp
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+# 3 Dispatched for md5
+# 4 md5 complete
+
+    filedb = sqlite3.connect(":memory:")
+    filedb.text_factory = str
+    filedb.execute("""CREATE TABLE FILECPY(
+ID INTEGER PRIMARY KEY AUTOINCREMENT,
+SORTORDER INTEGER DEFAULT -1,
+FILENAME TEXT,
+STATE INTEGER DEFAULT 0,
+SRCMD5 TEXT,
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+# 3 Dispatched for md5
+# 4 md5 complete
+
+    filedb = sqlite3.connect(":memory:")
+    filedb.text_factory = str
+    filedb.execute("""CREATE TABLE FILECPY(
+ID INTEGER PRIMARY KEY AUTOINCREMENT,
+SORTORDER INTEGER DEFAULT -1,
+FILENAME TEXT,
+STATE INTEGER DEFAULT 0,
+SRCMD5 TEXT,
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,43 @@
+88. Repo: UTHSCSA-CIRD/datafinisher
+	File: df.py
+	URL: https://github.com/UTHSCSA-CIRD/datafinisher/blob/01a6f0b3927af4af23ea7fd876b657a2bbd5276f/df.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    loincgrep_c = '^LOINC:([0-9]{4,5}-[0-9])$'
+    
+
+    # DONE (ticket #1): instead of relying on sqlite_denorm.sql, create the df_joinme table from inside this 
+    # script by putting the appropriate SQL commands into character strings and then passing those
+    # strings as arguments to execute() (see below for an example of cur.execute() usage (cur just happens 
+    # to be what we named the cursor object we created above, and execute() is a method that cursor objects have)
+    # DONE: create an id to concept_cd mapping table (and filtering out redundant facts taken care of here)
+    # TODO: parameterize the fact-filtering
+
+    # Variable persistence not fully implemented and this implementation might 
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    loincgrep_c = '^LOINC:([0-9]{4,5}-[0-9])$'
+    
+
+    # DONE (ticket #1): instead of relying on sqlite_denorm.sql, create the df_joinme table from inside this 
+    # script by putting the appropriate SQL commands into character strings and then passing those
+    # strings as arguments to execute() (see below for an example of cur.execute() usage (cur just happens 
+    # to be what we named the cursor object we created above, and execute() is a method that cursor objects have)
+    # DONE: create an id to concept_cd mapping table (and filtering out redundant facts taken care of here)
+    # TODO: parameterize the fact-filtering
+
+    # Variable persistence not fully implemented and this implementation might 
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

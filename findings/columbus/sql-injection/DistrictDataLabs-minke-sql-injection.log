@@ -1,0 +1,33 @@
+12. Repo: DistrictDataLabs/minke
+	File: sei
+	URL: https://github.com/DistrictDataLabs/minke/blob/e41e8583f1386dbad5249aad740343c984832f1e/sei
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+## Load and execute the CLI utility
+##########################################################################
+
+if __name__ == '__main__':
+    app = MinkeUtility.load()
+    app.execute()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+## Load and execute the CLI utility
+##########################################################################
+
+if __name__ == '__main__':
+    app = MinkeUtility.load()
+    app.execute()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

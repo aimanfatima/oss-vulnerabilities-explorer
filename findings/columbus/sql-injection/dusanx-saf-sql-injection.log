@@ -1,0 +1,43 @@
+6. Repo: dusanx/saf
+	File: saf
+	URL: https://github.com/dusanx/saf/blob/5ae7a2f023f2d9a66d13ac547d7e217a53b18156/saf
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+    ###################
+    # Utility functions
+    ###################
+
+    def safely_execute(self, cmd, return_output = False, output_on_screen = False, stop_on_error = True):
+        # uses bash to straighten up shell diferences
+        final_cmd = ['bash', '-c']
+        final_cmd.append(' '.join(cmd))
+        if self.saf_verbose_level >= 2:
+            print(f'Executing:\n{final_cmd}')
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+    ###################
+    # Utility functions
+    ###################
+
+    def safely_execute(self, cmd, return_output = False, output_on_screen = False, stop_on_error = True):
+        # uses bash to straighten up shell diferences
+        final_cmd = ['bash', '-c']
+        final_cmd.append(' '.join(cmd))
+        if self.saf_verbose_level >= 2:
+            print(f'Executing:\n{final_cmd}')
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

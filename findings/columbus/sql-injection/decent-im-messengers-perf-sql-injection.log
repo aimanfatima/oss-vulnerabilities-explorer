@@ -1,0 +1,36 @@
+68. Repo: decent-im/messengers-perf
+	File: load
+	URL: https://github.com/decent-im/messengers-perf/blob/57b3b529fef0cfab487bca9e8aefd619ac2a5211/load
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+with open(f'{script_dir}/conn_string', 'r') as file:
+    conn_string = file.read()
+
+conn = psycopg2.connect(conn_string)
+cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+cur.execute("PREPARE INS AS INSERT INTO app_readings (run_id, app_id, timestamp, energy_use, wifi_send, wifi_recv, cpu_time, ram_use) VALUES($1, $2, $3, $4, $5, $6, $7, $8)");
+cur.execute("EXECUTE INS (%(run_id)s, %(app_id)s, %(timestamp)s, %(energy_use)s, %(wifi_send)s, %(wifi_recv)s, %(cpu_time)s, %(ram_use)s)", vars=app_reading_dict)
+conn.commit()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+with open(f'{script_dir}/conn_string', 'r') as file:
+    conn_string = file.read()
+
+conn = psycopg2.connect(conn_string)
+cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+cur.execute("PREPARE INS AS INSERT INTO app_readings (run_id, app_id, timestamp, energy_use, wifi_send, wifi_recv, cpu_time, ram_use) VALUES($1, $2, $3, $4, $5, $6, $7, $8)");
+cur.execute("EXECUTE INS (%(run_id)s, %(app_id)s, %(timestamp)s, %(energy_use)s, %(wifi_send)s, %(wifi_recv)s, %(cpu_time)s, %(ram_use)s)", vars=app_reading_dict)
+conn.commit()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

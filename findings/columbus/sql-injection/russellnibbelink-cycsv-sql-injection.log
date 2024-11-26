@@ -1,0 +1,42 @@
+51. Repo: russellnibbelink/cycsv
+	File: y.py
+	URL: https://github.com/russellnibbelink/cycsv/blob/c2996291e5abefef06519a3e2fed24944d27f287/y.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+def make_list(metric, table, order):
+    #make_list(agentId, Agents, agentId)
+    #basic sort DB
+    mlist = []
+    for row in c.execute('SELECT '+ metric + ' FROM ' + table + ' ORDER BY ' + order):
+        mlist.append(row[0])
+    return mlist
+
+def make_sort_list(metric, table, order,filter_category, filter_metric):
+    #make_sort_list('TransactionId', 'Transactions', 'Time', 'SenderId', 24)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+def make_list(metric, table, order):
+    #make_list(agentId, Agents, agentId)
+    #basic sort DB
+    mlist = []
+    for row in c.execute('SELECT '+ metric + ' FROM ' + table + ' ORDER BY ' + order):
+        mlist.append(row[0])
+    return mlist
+
+def make_sort_list(metric, table, order,filter_category, filter_metric):
+    #make_sort_list('TransactionId', 'Transactions', 'Time', 'SenderId', 24)
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

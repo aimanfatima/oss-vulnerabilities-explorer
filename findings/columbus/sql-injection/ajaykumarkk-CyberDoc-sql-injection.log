@@ -1,0 +1,40 @@
+52. Repo: ajaykumarkk/CyberDoc
+	File: t.py
+	URL: https://github.com/ajaykumarkk/CyberDoc/blob/79be1a2c0d354aee90639523dd417c56ec60cacb/t.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    conn=dbConnect()
+    cursor=conn.cursor()
+    f = open("./firehol_level1.netset", "r")
+    for line in f.readlines():
+        line = line.strip("\n")
+        cursor.execute('INSERT INTO malacious_ips(ip_values) values("'+ str(line) + '");')
+    conn.commit()
+    conn.close()
+	
+dbInsert_12()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    conn=dbConnect()
+    cursor=conn.cursor()
+    f = open("./firehol_level1.netset", "r")
+    for line in f.readlines():
+        line = line.strip("\n")
+        cursor.execute('INSERT INTO malacious_ips(ip_values) values("'+ str(line) + '");')
+    conn.commit()
+    conn.close()
+	
+dbInsert_12()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

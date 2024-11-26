@@ -1,0 +1,43 @@
+8. Repo: basak/ddar
+	File: ddar
+	URL: https://github.com/basak/ddar/blob/8ce4727a7db25dfb2a7cae197a5fe5bce567ff45/ddar
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+            raise ConsoleError('%s uses ddar archive version %s but only' +
+                               'version 1 is supported' % self.dirname)
+
+        self.db = sqlite3.connect(os.path.join(self.dirname, 'db'))
+        self.db.text_factory = str
+        self.db.execute('PRAGMA foreign_keys = ON')
+
+    @staticmethod
+    def _read_small_file(name, size_limit=1024):
+        f = open(name, 'r')
+        try:
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+            raise ConsoleError('%s uses ddar archive version %s but only' +
+                               'version 1 is supported' % self.dirname)
+
+        self.db = sqlite3.connect(os.path.join(self.dirname, 'db'))
+        self.db.text_factory = str
+        self.db.execute('PRAGMA foreign_keys = ON')
+
+    @staticmethod
+    def _read_small_file(name, size_limit=1024):
+        f = open(name, 'r')
+        try:
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

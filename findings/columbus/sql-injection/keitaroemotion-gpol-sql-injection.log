@@ -1,0 +1,43 @@
+200. Repo: keitaroemotion/gpol
+	File: gpol
+	URL: https://github.com/keitaroemotion/gpol/blob/4d19f897be103a70e5e482837858d24895837ed4/gpol
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+
+if (date_to == None) or (date_from == None):
+    date_to   = date.today()
+    date_from = date_to - timedelta(days=14)
+
+print("org_name: {}, user_name: {}, date_from: {}, date_to: {}".format(organization_name, user_name, date_from, date_to))    
+
+def read_token():
+    f = open(TOKEN_PATH, "r")
+    content = f.read()
+    f.close()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+if (date_to == None) or (date_from == None):
+    date_to   = date.today()
+    date_from = date_to - timedelta(days=14)
+
+print("org_name: {}, user_name: {}, date_from: {}, date_to: {}".format(organization_name, user_name, date_from, date_to))    
+
+def read_token():
+    f = open(TOKEN_PATH, "r")
+    content = f.read()
+    f.close()
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

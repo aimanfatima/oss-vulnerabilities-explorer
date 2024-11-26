@@ -1,0 +1,43 @@
+37. Repo: thibautcornolti/GPush
+	File: gpush
+	URL: https://github.com/thibautcornolti/GPush/blob/cf71affa73c252380f01189b3bc4e00b2d95264b/gpush
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+def get_push_folder(service):
+    folder = service.files().list(
+        q="name='GPush'",
+        pageSize=100,
+        fields="files(id, mimeType)"
+    ).execute()
+    for obj in folder.get('files'):
+        if obj.get('mimeType') == 'application/vnd.google-apps.folder':
+            return obj.get('id')
+
+    return service.files().create(
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+def get_push_folder(service):
+    folder = service.files().list(
+        q="name='GPush'",
+        pageSize=100,
+        fields="files(id, mimeType)"
+    ).execute()
+    for obj in folder.get('files'):
+        if obj.get('mimeType') == 'application/vnd.google-apps.folder':
+            return obj.get('id')
+
+    return service.files().create(
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

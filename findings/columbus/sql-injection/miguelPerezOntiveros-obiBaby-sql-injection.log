@@ -1,0 +1,42 @@
+61. Repo: miguelPerezOntiveros/obiBaby
+	File: nc
+	URL: https://github.com/miguelPerezOntiveros/obiBaby/blob/9035163b12ca872bd9653c315c0103905ea236ec/nc
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    try:
+	fecha = time.strftime('%Y-%m-%d %H:%M:%S')
+	print "Leyendo Temperatura y humedad"
+        [temp,humidity] = grovepi.dht(sensorth,0)
+	print "temp =", temp, " humidity =", humidity
+	cur.execute("INSERT INTO log_user_temperature (temperature, humidity, created_at) VALUES ('%s', '%s', %s)", (temp, humidity, fecha))
+	db.commit()
+	print "Temperatura y Humedad Actualizado en la BD"
+	print "Leyendo sensor de Gas"
+	sensor_value = grovepi.analogRead(gas_sensor)
+	print "sensor_value =", sensor_value
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    try:
+	fecha = time.strftime('%Y-%m-%d %H:%M:%S')
+	print "Leyendo Temperatura y humedad"
+        [temp,humidity] = grovepi.dht(sensorth,0)
+	print "temp =", temp, " humidity =", humidity
+	cur.execute("INSERT INTO log_user_temperature (temperature, humidity, created_at) VALUES ('%s', '%s', %s)", (temp, humidity, fecha))
+	db.commit()
+	print "Temperatura y Humedad Actualizado en la BD"
+	print "Leyendo sensor de Gas"
+	sensor_value = grovepi.analogRead(gas_sensor)
+	print "sensor_value =", sensor_value
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

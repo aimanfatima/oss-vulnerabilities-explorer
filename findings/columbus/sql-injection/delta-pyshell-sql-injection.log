@@ -1,0 +1,42 @@
+32. Repo: delta/pyshell
+	File: pysh
+	URL: https://github.com/delta/pyshell/blob/f2abd2fec550ffdff0d4dc9175d04a515ea44977/pysh
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+# 	logFile.write(command + "\n");
+# 	logFile.close();
+# 	#Enter log into db for verification
+# 	con = MySQLdb.connect(host="10.0.0.163", user="pragyan11", passwd="andromeda", db="pragyan11_treasure")
+# 	cur = con.cursor()
+# 	cur.execute("insert into `treasure_hunt` (`username`,`command`, `hostname`, `ipaddr`) values('"+username +"','"+command +"','"+hostname+"', '"+ipaddr+"')")
+# 	con.commit()
+# 	con.close()
+
+print intro_message;
+while(True):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+# 	logFile.write(command + "\n");
+# 	logFile.close();
+# 	#Enter log into db for verification
+# 	con = MySQLdb.connect(host="10.0.0.163", user="pragyan11", passwd="andromeda", db="pragyan11_treasure")
+# 	cur = con.cursor()
+# 	cur.execute("insert into `treasure_hunt` (`username`,`command`, `hostname`, `ipaddr`) values('"+username +"','"+command +"','"+hostname+"', '"+ipaddr+"')")
+# 	con.commit()
+# 	con.close()
+
+print intro_message;
+while(True):
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

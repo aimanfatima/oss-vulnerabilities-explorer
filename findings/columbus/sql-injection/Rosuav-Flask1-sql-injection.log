@@ -1,0 +1,43 @@
+91. Repo: Rosuav/Flask1
+	File: 1.py
+	URL: https://github.com/Rosuav/Flask1/blob/15c4975de7c59c04eb3d2a7b723cd4540b42fe34/1.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+	more = 'more' in request.args # We don't care what its value is - it might even be blank
+	if 'recent' in request.args: query += " order by id desc"
+	else: query += " order by date desc, id desc"
+	if not more: query += " limit 51"
+	cur = db.cursor()
+	cur.execute(query, params)
+	rows = cur.fetchall()
+	morelink = ""
+	if not more and len(rows)>50:
+		rows.pop() # Discard the last row. We only care that it's present (and therefore we need a "More" link)
+		search = "" # ?search
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	more = 'more' in request.args # We don't care what its value is - it might even be blank
+	if 'recent' in request.args: query += " order by id desc"
+	else: query += " order by date desc, id desc"
+	if not more: query += " limit 51"
+	cur = db.cursor()
+	cur.execute(query, params)
+	rows = cur.fetchall()
+	morelink = ""
+	if not more and len(rows)>50:
+		rows.pop() # Discard the last row. We only care that it's present (and therefore we need a "More" link)
+		search = "" # ?search
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

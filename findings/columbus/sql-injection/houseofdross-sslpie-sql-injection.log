@@ -1,0 +1,43 @@
+171. Repo: houseofdross/sslpie
+	File: ssl
+	URL: https://github.com/houseofdross/sslpie/blob/fa17a535936f9f8f0f994043fbc4f8aadc4ab5b4/ssl
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+        self.alternativeNames = []
+        self.notBefore = datetime.today()
+        self.notAfter = datetime.today()
+
+    def __repr__(self):
+        return "<Certificate subject:\'{0}\' alternativeNames:\'{1}\' issuer:\'{2}\' notBefore:\'{3}\' notAfter:\'{4}\'>".format(
+            self.subject, self.alternativeNames, self.issuer, self.notBefore, self.notAfter
+        )
+
+
+class CertGrabber:
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        self.alternativeNames = []
+        self.notBefore = datetime.today()
+        self.notAfter = datetime.today()
+
+    def __repr__(self):
+        return "<Certificate subject:\'{0}\' alternativeNames:\'{1}\' issuer:\'{2}\' notBefore:\'{3}\' notAfter:\'{4}\'>".format(
+            self.subject, self.alternativeNames, self.issuer, self.notBefore, self.notAfter
+        )
+
+
+class CertGrabber:
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

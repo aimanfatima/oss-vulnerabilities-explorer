@@ -1,0 +1,43 @@
+77. Repo: JoseEliodoro/CRUD-em-python
+	File: a.py
+	URL: https://github.com/JoseEliodoro/CRUD-em-python/blob/66e149cdaed7345ef40fbac72853e63e630ed0f0/a.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+def montaTabelas():
+    
+    conn = sqlite3.connect('crudlab.db')
+    cursor = conn.cursor()
+    
+    cursor.execute("Create table if not exists tbl_laboratorio(id integer primary key autoincrement, specie text, order_v text, location text, date_collect date)")
+    conn.commit(); print("Banco de dados criado com sucesso")
+    conn.close(); print("Desconectando o Banco de Dados")
+    
+data_today = datetime.now()
+print(data_today.strftime('%d/%m/%y'))
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+def montaTabelas():
+    
+    conn = sqlite3.connect('crudlab.db')
+    cursor = conn.cursor()
+    
+    cursor.execute("Create table if not exists tbl_laboratorio(id integer primary key autoincrement, specie text, order_v text, location text, date_collect date)")
+    conn.commit(); print("Banco de dados criado com sucesso")
+    conn.close(); print("Desconectando o Banco de Dados")
+    
+data_today = datetime.now()
+print(data_today.strftime('%d/%m/%y'))
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

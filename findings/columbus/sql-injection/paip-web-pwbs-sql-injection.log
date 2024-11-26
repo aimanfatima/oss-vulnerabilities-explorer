@@ -1,0 +1,43 @@
+95. Repo: paip-web/pwbs
+	File: ci.py
+	URL: https://github.com/paip-web/pwbs/blob/21622712b6975ab68b7f5d7c1a944fa826ea87ba/ci.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+                break
+        except FileNotFoundError:
+            pass
+        print("\nPWCIW: Hash Changed")
+        function()
+def execute(command):
+    """Function to execute command line commands
+
+    Args:
+        command (object): Command
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+                break
+        except FileNotFoundError:
+            pass
+        print("\nPWCIW: Hash Changed")
+        function()
+def execute(command):
+    """Function to execute command line commands
+
+    Args:
+        command (object): Command
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

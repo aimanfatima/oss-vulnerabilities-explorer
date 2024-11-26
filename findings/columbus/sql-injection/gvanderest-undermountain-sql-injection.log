@@ -1,0 +1,27 @@
+26. Repo: gvanderest/undermountain
+	File: um
+	URL: https://github.com/gvanderest/undermountain/blob/e3fcaa51d50ceb6039ddd78bc726ac4237bf7faa/um
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+#!/usr/bin/env python3
+from mud import cli
+cli.execute()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+#!/usr/bin/env python3
+from mud import cli
+cli.execute()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

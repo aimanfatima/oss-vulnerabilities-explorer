@@ -1,0 +1,43 @@
+184. Repo: sw37th/rj
+	File: rj
+	URL: https://github.com/sw37th/rj/blob/85abf7bb3f4a659da631b868067cf3a02d76dd4d/rj
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+    """
+    try:
+        with open(os.path.expanduser('~/.rj/config.yml')) as f:
+            config = yaml.safe_load(f)
+    except (PermissionError, FileNotFoundError, yaml.YAMLError) as err:
+        print('config.yml cannot load: {}'.format(err))
+        sys.exit(1)
+    return config
+
+"""
+引数の解析
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    """
+    try:
+        with open(os.path.expanduser('~/.rj/config.yml')) as f:
+            config = yaml.safe_load(f)
+    except (PermissionError, FileNotFoundError, yaml.YAMLError) as err:
+        print('config.yml cannot load: {}'.format(err))
+        sys.exit(1)
+    return config
+
+"""
+引数の解析
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

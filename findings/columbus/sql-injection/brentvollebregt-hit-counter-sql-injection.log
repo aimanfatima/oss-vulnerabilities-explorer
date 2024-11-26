@@ -1,0 +1,43 @@
+40. Repo: brentvollebregt/hit-counter
+	File: db.py
+	URL: https://github.com/brentvollebregt/hit-counter/blob/4cc85ce676a491834d75dd2d68888d8c9b42682a/db.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        if not os.path.exists(os.path.dirname(filename)):
+            print('WARN: The parent directory for ' + filename + ' does not exist so it will be created.')
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        connection = sqlite3.connect(filename)
+        connection.execute('pragma journal_mode=wal')
+        cursor = connection.cursor()
+        cursor.execute('CREATE TABLE IF NOT EXISTS url (id INTEGER PRIMARY KEY, url VARCHAR(256), count INTEGER);')
+
+    def get_connection(self):
+        """ Get the cursor to use in the current thread and remove rows that have expired in views"""
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        if not os.path.exists(os.path.dirname(filename)):
+            print('WARN: The parent directory for ' + filename + ' does not exist so it will be created.')
+            os.makedirs(os.path.dirname(filename), exist_ok=True)
+
+        connection = sqlite3.connect(filename)
+        connection.execute('pragma journal_mode=wal')
+        cursor = connection.cursor()
+        cursor.execute('CREATE TABLE IF NOT EXISTS url (id INTEGER PRIMARY KEY, url VARCHAR(256), count INTEGER);')
+
+    def get_connection(self):
+        """ Get the cursor to use in the current thread and remove rows that have expired in views"""
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

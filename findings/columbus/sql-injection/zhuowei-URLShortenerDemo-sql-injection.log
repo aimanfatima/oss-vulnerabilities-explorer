@@ -1,0 +1,42 @@
+85. Repo: zhuowei/URLShortenerDemo
+	File: c/g
+	URL: https://github.com/zhuowei/URLShortenerDemo/blob/b0e8f7ed65aacc7abcdb5da025fc8abfabc6d9df/c/g
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+conn = sqlite3.connect(PATH_TO_INSTALL + "/c/data/urls.db")
+
+c = conn.cursor();
+
+c.execute("select url from urls where id = ?", (urlid, ));
+urldata = c.fetchone();
+
+if urldata == None:
+	print_fail()
+	exit()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+conn = sqlite3.connect(PATH_TO_INSTALL + "/c/data/urls.db")
+
+c = conn.cursor();
+
+c.execute("select url from urls where id = ?", (urlid, ));
+urldata = c.fetchone();
+
+if urldata == None:
+	print_fail()
+	exit()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

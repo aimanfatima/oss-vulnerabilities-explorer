@@ -1,0 +1,43 @@
+93. Repo: np-n/Bank_Management_System_modules
+	File: 1.py
+	URL: https://github.com/np-n/Bank_Management_System_modules/blob/c15c576b31db2d38ccbe87afb4875ddfe3de599b/1.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+)
+# create cursor instance
+my_cursor= mydb.cursor()
+
+# create database
+# my_cursor.execute("CREATE DATABASE data1")   inorder to create database
+# show database
+# my_cursor.execute("SHOW DATABASES")
+#for db in my_cursor :
+#    print(db[0])   # produce output without any parenthesis rather than print(db)
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+)
+# create cursor instance
+my_cursor= mydb.cursor()
+
+# create database
+# my_cursor.execute("CREATE DATABASE data1")   inorder to create database
+# show database
+# my_cursor.execute("SHOW DATABASES")
+#for db in my_cursor :
+#    print(db[0])   # produce output without any parenthesis rather than print(db)
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

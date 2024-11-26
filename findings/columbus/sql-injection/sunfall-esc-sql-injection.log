@@ -1,0 +1,42 @@
+72. Repo: sunfall/esc
+	File: esc
+	URL: https://github.com/sunfall/esc/blob/0f120927f663f1c4207e29b6d5c8eca603814311/esc
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    def __init__(self, fn="esc.db"):
+        self._conn = sqlite3.connect(fn)
+
+    def delete(self, k):
+        if self.exists(k):
+            self._conn.execute("DELETE FROM esc WHERE k = ?", (k,))
+            self._conn.commit()
+
+    def exists(self, k):
+        c = self._conn.execute("SELECT k FROM esc where k = ?", (k,))
+        c_list = c.fetchall()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    def __init__(self, fn="esc.db"):
+        self._conn = sqlite3.connect(fn)
+
+    def delete(self, k):
+        if self.exists(k):
+            self._conn.execute("DELETE FROM esc WHERE k = ?", (k,))
+            self._conn.commit()
+
+    def exists(self, k):
+        c = self._conn.execute("SELECT k FROM esc where k = ?", (k,))
+        c_list = c.fetchall()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,43 @@
+160. Repo: shaman-narayanasamy/IMP
+	File: IMP
+	URL: https://github.com/shaman-narayanasamy/IMP/blob/a0ba37a6daa0e8a009869fb81cbab0212db9f84b/IMP
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+    ./IMP -m input/mg.r1.fq -m input/mg.r2.fq -t input/mt.r1.fq -t input/mt.r2.fq -o output_directory snakemake <STEP>
+
+    # Enter the container
+    ./IMP -m input/mg.r1.fq -m input/mg.r2.fq -t input/mt.r1.fq -t input/mt.r2.fq -o output_directory --enter
+
+""".format(
+    name=IMP_IMAGE_NAME,
+    version=IMP_VERSION,
+    repo=IMP_DEFAULT_TAR_REPOSITORY,
+    db=IMP_DEFAULT_DB_DIR
+)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    ./IMP -m input/mg.r1.fq -m input/mg.r2.fq -t input/mt.r1.fq -t input/mt.r2.fq -o output_directory snakemake <STEP>
+
+    # Enter the container
+    ./IMP -m input/mg.r1.fq -m input/mg.r2.fq -t input/mt.r1.fq -t input/mt.r2.fq -o output_directory --enter
+
+""".format(
+    name=IMP_IMAGE_NAME,
+    version=IMP_VERSION,
+    repo=IMP_DEFAULT_TAR_REPOSITORY,
+    db=IMP_DEFAULT_DB_DIR
+)
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

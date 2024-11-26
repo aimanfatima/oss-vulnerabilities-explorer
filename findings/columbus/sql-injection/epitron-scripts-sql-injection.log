@@ -1,0 +1,43 @@
+11. Repo: epitron/scripts
+	File: arf
+	URL: https://github.com/epitron/scripts/blob/2ab09c58f320471393957c9895c3fd73aa14864a/arf
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    print '    %s <input file or url> [output directory]' % sys.argv[0]
+    print
+    print 'The [output directory] is optional. By default, the current directory is used.'
+    print
+    
+def execute(cmd):
+    error = os.system(cmd)
+    if error != 0:
+        raise Exception, "Error! System command returned errorcode %d.\nCommand was: '%s'" % (error, cmd)
+        
+def prompt(message='(Y/n)? ', choices=['y','n'], default='y'):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    print '    %s <input file or url> [output directory]' % sys.argv[0]
+    print
+    print 'The [output directory] is optional. By default, the current directory is used.'
+    print
+    
+def execute(cmd):
+    error = os.system(cmd)
+    if error != 0:
+        raise Exception, "Error! System command returned errorcode %d.\nCommand was: '%s'" % (error, cmd)
+        
+def prompt(message='(Y/n)? ', choices=['y','n'], default='y'):
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

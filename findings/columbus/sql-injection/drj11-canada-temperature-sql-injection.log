@@ -1,0 +1,42 @@
+66. Repo: drj11/canada-temperature
+	File: tov3
+	URL: https://github.com/drj11/canada-temperature/blob/567c6a9e6e974db58bbc9fc88db6c15bb2370f3f/tov3
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+import sys
+
+def convert(dbname, out=sys.stdout):
+    co = sqlite3.connect(dbname)
+    cu = co.cursor()
+    cu.execute("""select id,year,month,v,f from obs
+      where element='tmeanM' order by id,year,month""")
+    # *obs* has one row per month, group so that we have
+    # all the months for one station--year together.
+    for g,rows in itertools.groupby(cu, lambda row: row[:2]):
+        id,year = g
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+import sys
+
+def convert(dbname, out=sys.stdout):
+    co = sqlite3.connect(dbname)
+    cu = co.cursor()
+    cu.execute("""select id,year,month,v,f from obs
+      where element='tmeanM' order by id,year,month""")
+    # *obs* has one row per month, group so that we have
+    # all the months for one station--year together.
+    for g,rows in itertools.groupby(cu, lambda row: row[:2]):
+        id,year = g
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

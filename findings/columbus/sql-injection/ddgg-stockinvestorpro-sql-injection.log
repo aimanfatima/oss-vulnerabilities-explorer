@@ -1,0 +1,43 @@
+55. Repo: ddgg/stockinvestorpro
+	File: pdbf
+	URL: https://github.com/ddgg/stockinvestorpro/blob/d7e8be8780a9d8e2559e8fbdffe1a13eaf3f9f85/pdbf
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+                raise Exception("concat %s date and name error: %s %s"%(dbf_name, file_date, table_name))
+        netto_name = table_name if args.concat else re.sub('[^A-Za-z0-9]', '_', dbf_name).strip('_')
+        print "Importing %s into table %s ..." % (dbf_name, netto_name)
+
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(%s)"%(netto_name))
+        field_count = len(cur.fetchall())
+        print "fieldcount of %s is %d"%(netto_name, field_count)
+
+        if field_count == 0:
+            """ table does not exist"""
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+                raise Exception("concat %s date and name error: %s %s"%(dbf_name, file_date, table_name))
+        netto_name = table_name if args.concat else re.sub('[^A-Za-z0-9]', '_', dbf_name).strip('_')
+        print "Importing %s into table %s ..." % (dbf_name, netto_name)
+
+        cur = conn.cursor()
+        cur.execute("PRAGMA table_info(%s)"%(netto_name))
+        field_count = len(cur.fetchall())
+        print "fieldcount of %s is %d"%(netto_name, field_count)
+
+        if field_count == 0:
+            """ table does not exist"""
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

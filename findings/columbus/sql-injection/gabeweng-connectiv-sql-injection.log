@@ -1,0 +1,43 @@
+65. Repo: gabeweng/connectiv
+	File: t.py
+	URL: https://github.com/gabeweng/connectiv/blob/e5a3293e7b220c4c7b400bfc5cb22c9069f4b67e/t.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+def create_accounts(conn):
+    id1 = uuid.uuid4()
+    id2 = uuid.uuid4()
+    with conn.cursor() as cur:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS accounts (id UUID PRIMARY KEY, balance INT)"
+        )
+        cur.execute(
+            "UPSERT INTO accounts (id, balance) VALUES (%s, 1000), (%s, 250)", (id1, id2))
+        print("create_accounts(): status message: %s",
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+def create_accounts(conn):
+    id1 = uuid.uuid4()
+    id2 = uuid.uuid4()
+    with conn.cursor() as cur:
+        cur.execute(
+            "CREATE TABLE IF NOT EXISTS accounts (id UUID PRIMARY KEY, balance INT)"
+        )
+        cur.execute(
+            "UPSERT INTO accounts (id, balance) VALUES (%s, 1000), (%s, 250)", (id1, id2))
+        print("create_accounts(): status message: %s",
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

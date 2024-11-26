@@ -1,0 +1,42 @@
+83. Repo: JohnLonginotto/log.bio
+	File: log
+	URL: https://github.com/JohnLonginotto/log.bio/blob/24773159649050f29a5024705e3081c79ec707e8/log
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+    logConf = json.dumps(settings,sort_keys=True, indent=4)
+    systemData = sqlite3.connect(logConfPath, timeout=999)
+    #systemData.text_factory = str
+    cursor = systemData.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS 'settings' ('settings' TEXT)") # overkill I know, but at
+    cursor.execute("INSERT INTO 'settings' VALUES (?)", (logConf,))           # least everything is together.
+    cursor.execute("CREATE TABLE IF NOT EXISTS 'hashLookup' ('MD5' TEXT,'pHash' TEXT,'size' INT,'mtime' REAL)")
+    cursor.execute("CREATE INDEX lookupIndex on hashLookup (size, mtime)")
+    systemData.commit()
+    systemData.close()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+    logConf = json.dumps(settings,sort_keys=True, indent=4)
+    systemData = sqlite3.connect(logConfPath, timeout=999)
+    #systemData.text_factory = str
+    cursor = systemData.cursor()
+    cursor.execute("CREATE TABLE IF NOT EXISTS 'settings' ('settings' TEXT)") # overkill I know, but at
+    cursor.execute("INSERT INTO 'settings' VALUES (?)", (logConf,))           # least everything is together.
+    cursor.execute("CREATE TABLE IF NOT EXISTS 'hashLookup' ('MD5' TEXT,'pHash' TEXT,'size' INT,'mtime' REAL)")
+    cursor.execute("CREATE INDEX lookupIndex on hashLookup (size, mtime)")
+    systemData.commit()
+    systemData.close()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

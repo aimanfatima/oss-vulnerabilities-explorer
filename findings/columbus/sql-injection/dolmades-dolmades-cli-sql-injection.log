@@ -1,0 +1,43 @@
+89. Repo: dolmades/dolmades-cli
+	File: cook
+	URL: https://github.com/dolmades/dolmades-cli/blob/2a0955778ad1b46367a612b3fb3144b5e03b6e6c/cook
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        if (cmd in cmds):
+            cmds[cmd](arg)
+        else:
+            raise Exception('Unknown instruction ' + cmd + ":" + " ".join(cmdarg))
+
+    def execute(self):
+        if (len(sys.argv)<2):
+            print("Usage: cook [--serve|--no-download|--no-validate|--hard-validate] Dolmafile")
+            print("       --serve: generates a desktop icon and menu entries")
+            print("       --no-download: use only local ingredients [NOT IMPLEMENTED YET]")
+            print("       --no-validate: do not validate ingredients using their checksums [NOT IMPLEMENTED YET]")
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        if (cmd in cmds):
+            cmds[cmd](arg)
+        else:
+            raise Exception('Unknown instruction ' + cmd + ":" + " ".join(cmdarg))
+
+    def execute(self):
+        if (len(sys.argv)<2):
+            print("Usage: cook [--serve|--no-download|--no-validate|--hard-validate] Dolmafile")
+            print("       --serve: generates a desktop icon and menu entries")
+            print("       --no-download: use only local ingredients [NOT IMPLEMENTED YET]")
+            print("       --no-validate: do not validate ingredients using their checksums [NOT IMPLEMENTED YET]")
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

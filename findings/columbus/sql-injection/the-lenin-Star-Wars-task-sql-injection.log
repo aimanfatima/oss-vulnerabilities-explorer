@@ -1,0 +1,42 @@
+41. Repo: the-lenin/Star-Wars-task
+	File: 1.py
+	URL: https://github.com/the-lenin/Star-Wars-task/blob/8764681f1addf79166eaed5f21497bc705083252/1.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+db=MySQLdb.connect(host="localhost", user="monty", passwd="some_pass", db="db1")
+cursor = db.cursor()
+name_u=raw_input("Enter username")
+passwd1=raw_input("Enter password")
+data_s=cursor.execute("SELECT * FROM users WHERE name='"+name_u+"' and passwd='"+passwd1+"';")
+
+print data_s
+print "		    8888888888  888    88888\n                   88     88   88 88   88  88\n                    8888  88  88   88  88888\n                       88 88 888888888 88   88\n                88888888  88 88     88 88    888888\n\n                88  88  88   888    88888    888888\n                88  88  88  88 88   88  88  88\n                88 8888 88 88   88  88888    8888\n                 888  888 888888888 88   88     88\n                  88  88  88     88 88    8888888"
+
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+db=MySQLdb.connect(host="localhost", user="monty", passwd="some_pass", db="db1")
+cursor = db.cursor()
+name_u=raw_input("Enter username")
+passwd1=raw_input("Enter password")
+data_s=cursor.execute("SELECT * FROM users WHERE name='"+name_u+"' and passwd='"+passwd1+"';")
+
+print data_s
+print "		    8888888888  888    88888\n                   88     88   88 88   88  88\n                    8888  88  88   88  88888\n                       88 88 888888888 88   88\n                88888888  88 88     88 88    888888\n\n                88  88  88   888    88888    888888\n                88  88  88  88 88   88  88  88\n                88 8888 88 88   88  88888    8888\n                 888  888 888888888 88   88     88\n                  88  88  88     88 88    8888888"
+
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,43 @@
+142. Repo: mthbernardes/rsg
+	File: rsg
+	URL: https://github.com/mthbernardes/rsg/blob/c7628a975e98e4ca1eac6543ade978e0951f8844/rsg
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+from shutil import which
+import signal
+
+
+def GREEN(text):
+    return "\033[32m{}\033[0m".format(str(text))
+
+
+def RED(text):
+    return "\033[31m{}\033[0m\n".format(str(text))
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+from shutil import which
+import signal
+
+
+def GREEN(text):
+    return "\033[32m{}\033[0m".format(str(text))
+
+
+def RED(text):
+    return "\033[31m{}\033[0m\n".format(str(text))
+
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,43 @@
+170. Repo: sraustein/zc
+	File: zc
+	URL: https://github.com/sraustein/zc/blob/ba87f493e752bec6236f421de962c0035410c9ac/zc
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+        if isinstance(x, str) and y is None:
+            x, y = x.split("/")
+        self.net = Address(x)
+        self.len = int(y)
+        if self.len < 0 or self.len > self.net.bits:
+            raise ValueError("Prefix length {0.len!s} is out of range for prefix {0.net!s}".format(self))
+
+    def __cmp__(self, other):
+        return cmp(self.net, other.net) or cmp(self.len, other.len)
+
+    def __hash__(self):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        if isinstance(x, str) and y is None:
+            x, y = x.split("/")
+        self.net = Address(x)
+        self.len = int(y)
+        if self.len < 0 or self.len > self.net.bits:
+            raise ValueError("Prefix length {0.len!s} is out of range for prefix {0.net!s}".format(self))
+
+    def __cmp__(self, other):
+        return cmp(self.net, other.net) or cmp(self.len, other.len)
+
+    def __hash__(self):
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

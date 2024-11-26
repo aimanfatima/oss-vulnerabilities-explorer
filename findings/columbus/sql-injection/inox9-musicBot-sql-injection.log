@@ -1,0 +1,42 @@
+53. Repo: inox9/musicBot
+	File: mbot
+	URL: https://github.com/inox9/musicBot/blob/acf0098ab3cbf56c2f72834136973903f3963d5f/mbot
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+	def getRightModule(self, host):
+		return host if self.module_map[host] == 1 else self.module_map[host]
+
+	def getWaitingReleases(self):
+		self.cur.execute('select id,keywords from awaiting where state=0')
+		self.waiting = self.cur.fetchall()
+
+	def getFailedReleases(self):
+		self.cur.execute('select id,releasepage,releasename from awaiting where state=1')
+		self.failed = self.cur.fetchall()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+	def getRightModule(self, host):
+		return host if self.module_map[host] == 1 else self.module_map[host]
+
+	def getWaitingReleases(self):
+		self.cur.execute('select id,keywords from awaiting where state=0')
+		self.waiting = self.cur.fetchall()
+
+	def getFailedReleases(self):
+		self.cur.execute('select id,releasepage,releasename from awaiting where state=1')
+		self.failed = self.cur.fetchall()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

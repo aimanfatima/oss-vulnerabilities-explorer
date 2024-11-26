@@ -1,0 +1,42 @@
+4. Repo: wdkwdkwdk/fuck_illness
+	File: m.py
+	URL: https://github.com/wdkwdkwdk/fuck_illness/blob/d80602479ec28865e59863c678faf4e1f879277a/m.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+                             password='root',
+                             db='test',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+	cursor = connection.cursor()
+	# 使用 execute()  方法执行 SQL 查询 
+	sql = "select * from fuck_ill where 1 order by ill_id desc limit 1"
+	cursor.execute(sql)
+	results = cursor.fetchall()
+	cursor.close()
+	return results
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+                             password='root',
+                             db='test',
+                             charset='utf8mb4',
+                             cursorclass=pymysql.cursors.DictCursor)
+	cursor = connection.cursor()
+	# 使用 execute()  方法执行 SQL 查询 
+	sql = "select * from fuck_ill where 1 order by ill_id desc limit 1"
+	cursor.execute(sql)
+	results = cursor.fetchall()
+	cursor.close()
+	return results
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

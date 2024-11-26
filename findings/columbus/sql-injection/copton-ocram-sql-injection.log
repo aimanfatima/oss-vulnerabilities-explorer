@@ -1,0 +1,43 @@
+23. Repo: copton/ocram
+	File: make
+	URL: https://github.com/copton/ocram/blob/c7166eab0187868a52a61017c6d3687e5a1a6162/make
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+if len(sys.argv) != 2:
+    sys.stderr.write("usage: make binary\n")
+    sys.exit(1)
+
+def execute(commandline):
+    proc = subprocess.Popen(commandline.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    sys.stdout.write(out)
+    sys.stdout.write(err)
+    return (proc.returncode, out, err)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+if len(sys.argv) != 2:
+    sys.stderr.write("usage: make binary\n")
+    sys.exit(1)
+
+def execute(commandline):
+    proc = subprocess.Popen(commandline.split(" "), stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    out, err = proc.communicate()
+    sys.stdout.write(out)
+    sys.stdout.write(err)
+    return (proc.returncode, out, err)
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

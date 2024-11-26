@@ -1,0 +1,43 @@
+84. Repo: konradstrack/forvelki
+	File: fvl
+	URL: https://github.com/konradstrack/forvelki/blob/6c29d617d4db24716b54d0b7a4eb8c32588078a3/fvl
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+	except IOError:
+		print>>sys.stderr, "unable to read file %s" % filename
+		sys.exit(1)
+	else:
+		pgm = parser.parse(src)
+		for result in pgm.execute():
+			print result
+
+def interactive_interpreter():
+	ex = executor()
+	try:
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+	except IOError:
+		print>>sys.stderr, "unable to read file %s" % filename
+		sys.exit(1)
+	else:
+		pgm = parser.parse(src)
+		for result in pgm.execute():
+			print result
+
+def interactive_interpreter():
+	ex = executor()
+	try:
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

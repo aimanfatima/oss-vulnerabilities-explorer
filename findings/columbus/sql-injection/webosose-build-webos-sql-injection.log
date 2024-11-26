@@ -1,0 +1,43 @@
+107. Repo: webosose/build-webos
+	File: mcf
+	URL: https://github.com/webosose/build-webos/blob/a3dcac3d5932ef0c3ee3f29a1f395eb1d93041a9/mcf
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+
+    verbosity.add_argument('-s', '--silent',  action='count', help='work silently, repeat the option twice to hide also the warnings, tree times to hide the errors as well')
+    verbosity.add_argument('-v', '--verbose', action='count', help='work verbosely, repeat the option twice for more debug output')
+
+    general.add_argument('-c', '--clean', dest='clean', action='store_true', default=False, help='clean checkout - WARN: removes all local changes')
+    general.add_argument('-V', '--version', action='version', version='%(prog)s {0}'.format(__version__), help='print version and exit')
+
+    general.add_argument(mcfcommand_option, dest=mcfcommand_dest, choices=mcfcommand_choices, default=mcfcommand_default,
+                              help='command to mcf; if update is given, none of the remaining options nor MACHINE can be specified (default: %(default)s)')
+
+    if mcfcommand in ('configure','update+configure'):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+    verbosity.add_argument('-s', '--silent',  action='count', help='work silently, repeat the option twice to hide also the warnings, tree times to hide the errors as well')
+    verbosity.add_argument('-v', '--verbose', action='count', help='work verbosely, repeat the option twice for more debug output')
+
+    general.add_argument('-c', '--clean', dest='clean', action='store_true', default=False, help='clean checkout - WARN: removes all local changes')
+    general.add_argument('-V', '--version', action='version', version='%(prog)s {0}'.format(__version__), help='print version and exit')
+
+    general.add_argument(mcfcommand_option, dest=mcfcommand_dest, choices=mcfcommand_choices, default=mcfcommand_default,
+                              help='command to mcf; if update is given, none of the remaining options nor MACHINE can be specified (default: %(default)s)')
+
+    if mcfcommand in ('configure','update+configure'):
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

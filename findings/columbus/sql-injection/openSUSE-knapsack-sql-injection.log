@@ -1,0 +1,43 @@
+173. Repo: openSUSE/knapsack
+	File: kp
+	URL: https://github.com/openSUSE/knapsack/blob/253eb51389a9521b9ae3df9e0080aa948109ff23/kp
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+
+    args = parser.parse_args()
+
+    if args.fixsize:
+        args.wsize = (args.wsize - args.intercept) / args.slope - 1024
+        print >> sys.stderr, 'Fixed the size of the KP to {0}MB ({1}GB)'.format(
+            args.wsize, args.wsize/1024)
+
+    print >> sys.stderr, 'Reading size list and converting size into MB...'
+    sizes = dict((s[1], s[0]) for s in read_file(args.size, ratio=B_M) if s[0] >= SIZE_CUTOFF)
+    sizes_set = set(sizes.iterkeys())
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+    args = parser.parse_args()
+
+    if args.fixsize:
+        args.wsize = (args.wsize - args.intercept) / args.slope - 1024
+        print >> sys.stderr, 'Fixed the size of the KP to {0}MB ({1}GB)'.format(
+            args.wsize, args.wsize/1024)
+
+    print >> sys.stderr, 'Reading size list and converting size into MB...'
+    sizes = dict((s[1], s[0]) for s in read_file(args.size, ratio=B_M) if s[0] >= SIZE_CUTOFF)
+    sizes_set = set(sizes.iterkeys())
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

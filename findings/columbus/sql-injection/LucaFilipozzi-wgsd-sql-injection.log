@@ -1,0 +1,43 @@
+56. Repo: LucaFilipozzi/wgsd
+	File: wgsd
+	URL: https://github.com/LucaFilipozzi/wgsd/blob/48d0453142bbf0962ee24996010a3c775adda9c9/wgsd
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        params = munch.Munch()
+        params.action = 'list'
+        params.domain = self.domain
+        params.name = rrset_name
+        params.type = rrset_type
+        return self._execute(params)
+
+    def _create(self, rrset_name: str, rrset_type: str, rrset_value: str):
+        params = munch.Munch()
+        params.action = 'create'
+        params.domain = self.domain
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        params = munch.Munch()
+        params.action = 'list'
+        params.domain = self.domain
+        params.name = rrset_name
+        params.type = rrset_type
+        return self._execute(params)
+
+    def _create(self, rrset_name: str, rrset_type: str, rrset_value: str):
+        params = munch.Munch()
+        params.action = 'create'
+        params.domain = self.domain
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

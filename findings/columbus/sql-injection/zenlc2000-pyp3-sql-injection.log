@@ -1,0 +1,43 @@
+47. Repo: zenlc2000/pyp3
+	File: pyp3
+	URL: https://github.com/zenlc2000/pyp3/blob/01b917add4b99f0759d2d1189b6a8b120d2d4053/pyp3
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        try: #occasionally, python loses pwd info
+            self.pwd = os.getcwd()
+        except:
+            self.pwd =''
+
+    def get_custom_execute(self):
+        '''returns customized paths to macro files if they are setup'''
+        custom_ob = PypCustom()
+        custom_attrs = dir(custom_ob)
+
+        if 'custom_execute' in custom_attrs and custom_ob.custom_execute:
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        try: #occasionally, python loses pwd info
+            self.pwd = os.getcwd()
+        except:
+            self.pwd =''
+
+    def get_custom_execute(self):
+        '''returns customized paths to macro files if they are setup'''
+        custom_ob = PypCustom()
+        custom_attrs = dir(custom_ob)
+
+        if 'custom_execute' in custom_attrs and custom_ob.custom_execute:
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

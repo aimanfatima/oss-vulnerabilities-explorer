@@ -1,0 +1,42 @@
+94. Repo: kuailexuexi123/sitting-posture-recognition
+	File: 1.py
+	URL: https://github.com/kuailexuexi123/sitting-posture-recognition/blob/943409bae050012fb83d490ff5c5e8dc7e278ce7/1.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+    yonghu_name = x[0]
+    yonghu_password = x[1]  # 未完善
+    print(yonghu_name)
+conn = pymysql.connect(host='localhost', port=3306, user='root', password='nuliba520.', db='test')
+cursor = conn.cursor()
+cursor.execute('SELECT * FROM users WHERE username=%s ', yonghu_name)
+result = cursor.fetchall()
+for row in result:
+    yonghu_name = row[0]
+    yonghu_password=row[1]
+    yonghu_number=row[2]
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    yonghu_name = x[0]
+    yonghu_password = x[1]  # 未完善
+    print(yonghu_name)
+conn = pymysql.connect(host='localhost', port=3306, user='root', password='nuliba520.', db='test')
+cursor = conn.cursor()
+cursor.execute('SELECT * FROM users WHERE username=%s ', yonghu_name)
+result = cursor.fetchall()
+for row in result:
+    yonghu_name = row[0]
+    yonghu_password=row[1]
+    yonghu_number=row[2]
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

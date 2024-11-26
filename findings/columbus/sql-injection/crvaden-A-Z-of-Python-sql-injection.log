@@ -1,0 +1,42 @@
+54. Repo: crvaden/A-Z-of-Python
+	File: P.py
+	URL: https://github.com/crvaden/A-Z-of-Python/blob/ae6348bf9bfeefd0b88f89fea3d07527ce4930ef/P.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    pickled_colors = pickle.dumps(color)
+    pickled_price = pickle.dumps(price)
+
+    cur.execute("""INSERT INTO gems(colors, price) VALUES (%s, %s);""", (pickled_colors, pickled_price))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
+
+    pickled_colors = pickle.dumps(color)
+    pickled_price = pickle.dumps(price)
+
+    cur.execute("""INSERT INTO gems(colors, price) VALUES (%s, %s);""", (pickled_colors, pickled_price))
+
+    conn.commit()
+    cur.close()
+    conn.close()
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,42 @@
+14. Repo: redianmarku/YouTube-Bot
+	File: yt.py
+	URL: https://github.com/redianmarku/YouTube-Bot/blob/c961ac6a9245be9bdbb09002a08cc34c894f77b3/yt.py
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.commentThreads().insert(
+    body=resource,
+    **kwargs
+  ).execute()
+
+  return print_response(response)
+
+def scrape(keyword):
+    url = 'https://www.youtube.com/results?q={}&sp=CAISAggBUBQ%253D'.format(keyword)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+  kwargs = remove_empty_kwargs(**kwargs)
+
+  response = client.commentThreads().insert(
+    body=resource,
+    **kwargs
+  ).execute()
+
+  return print_response(response)
+
+def scrape(keyword):
+    url = 'https://www.youtube.com/results?q={}&sp=CAISAggBUBQ%253D'.format(keyword)
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    username = "john"
+
+    Malicious input that could inject additional SQL:
+    username = "john'); DROP TABLE users;--"
+
+    Resulting query:
+    INSERT INTO users (username) VALUES ('john'); DROP TABLE users;--
+    # This would insert the user and then drop the entire users table
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

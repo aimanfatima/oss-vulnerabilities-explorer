@@ -1,0 +1,42 @@
+17. Repo: engmubarak48/Face-Recognition-System
+	File: app
+	URL: https://github.com/engmubarak48/Face-Recognition-System/blob/3b1b0993b126cbff788b5ab9acb3a5251cabfc61/app
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+class Faiss:
+    def __init__(self, directory):
+
+        self.conn = pymssql.connect(server='IP-ADDRESS', user='DB-USER', password='DB-PASSWORD', database='DB-NAME')
+        self.cur = self.conn.cursor() 
+        self.cur.execute("SELECT COUNT(*) FROM dbo.frdata")
+        self.count = self.cur.fetchone()
+        if os.path.isfile(directory + '/512_new'):
+            self.index = faiss.read_index(directory + '/512_new')
+        else:
+            print('faiss index is not available')
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+class Faiss:
+    def __init__(self, directory):
+
+        self.conn = pymssql.connect(server='IP-ADDRESS', user='DB-USER', password='DB-PASSWORD', database='DB-NAME')
+        self.cur = self.conn.cursor() 
+        self.cur.execute("SELECT COUNT(*) FROM dbo.frdata")
+        self.count = self.cur.fetchone()
+        if os.path.isfile(directory + '/512_new'):
+            self.index = faiss.read_index(directory + '/512_new')
+        else:
+            print('faiss index is not available')
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

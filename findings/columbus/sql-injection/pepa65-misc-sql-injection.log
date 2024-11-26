@@ -1,0 +1,42 @@
+82. Repo: pepa65/misc
+	File: ffpw
+	URL: https://github.com/pepa65/misc/blob/a1d0a770f8341e810fb521122fa5f018850db104/ffpw
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+		raise E_database()
+	# Firefox 58.0.2 / NSS 3.35 with key4.db in SQLite
+	conn = sqlite3.connect(dbfile.as_posix())
+	c = conn.cursor()
+	# First check password
+	c.execute("SELECT item1,item2 FROM metadata WHERE id = 'password';")
+	row = next(c)
+	globalSalt = row[0]  # item1
+	item2 = row[1]
+	decodedItem2, _ = der_decode(item2)
+	entrySalt = decodedItem2[0][1][0].asOctets()
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+		raise E_database()
+	# Firefox 58.0.2 / NSS 3.35 with key4.db in SQLite
+	conn = sqlite3.connect(dbfile.as_posix())
+	c = conn.cursor()
+	# First check password
+	c.execute("SELECT item1,item2 FROM metadata WHERE id = 'password';")
+	row = next(c)
+	globalSalt = row[0]  # item1
+	item2 = row[1]
+	decodedItem2, _ = der_decode(item2)
+	entrySalt = decodedItem2[0][1][0].asOctets()
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

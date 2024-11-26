@@ -1,0 +1,42 @@
+97. Repo: mattbierbaum/yo.runat.me
+	File: yo
+	URL: https://github.com/mattbierbaum/yo.runat.me/blob/cb835f251773b601dbcbd49e80f7325f454ac013/yo
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+def connect_db():
+    return sqlite3.connect(DATABASE)
+
+def get_used_words():
+    with connect_db() as db:
+        words = set(db.execute('SELECT nickname from urls').fetchall())
+    return words.union(SPECIAL)
+
+def get_random_noun():
+    with open('words.pickle') as f:
+        words = pickle.load(f)
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+def connect_db():
+    return sqlite3.connect(DATABASE)
+
+def get_used_words():
+    with connect_db() as db:
+        words = set(db.execute('SELECT nickname from urls').fetchall())
+    return words.union(SPECIAL)
+
+def get_random_noun():
+    with open('words.pickle') as f:
+        words = pickle.load(f)
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

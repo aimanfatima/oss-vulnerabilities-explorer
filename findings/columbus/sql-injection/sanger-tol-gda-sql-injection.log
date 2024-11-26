@@ -1,0 +1,43 @@
+138. Repo: sanger-tol/gda
+	File: gda
+	URL: https://github.com/sanger-tol/gda/blob/2276ca0b71fb5c54e59e95a25473af94eee60353/gda
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+    for i in range(1, 100000):
+        pipeline_run_folder = ""
+        if i == 1:
+            pipeline_run_folder = current_working_directory + "/" + current_date + "_gda_pipeline_run"
+        else:
+            pipeline_run_folder = current_working_directory + "/" + current_date + "_gda_pipeline_run_{}".format(i)
+        if os.path.isdir(pipeline_run_folder) == True:
+            pipeline_run_folder_files = os.listdir(pipeline_run_folder)
+            if len(pipeline_run_folder_files) == 0:
+                run_folder_name_assigned = True
+                break
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+    for i in range(1, 100000):
+        pipeline_run_folder = ""
+        if i == 1:
+            pipeline_run_folder = current_working_directory + "/" + current_date + "_gda_pipeline_run"
+        else:
+            pipeline_run_folder = current_working_directory + "/" + current_date + "_gda_pipeline_run_{}".format(i)
+        if os.path.isdir(pipeline_run_folder) == True:
+            pipeline_run_folder_files = os.listdir(pipeline_run_folder)
+            if len(pipeline_run_folder_files) == 0:
+                run_folder_name_assigned = True
+                break
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

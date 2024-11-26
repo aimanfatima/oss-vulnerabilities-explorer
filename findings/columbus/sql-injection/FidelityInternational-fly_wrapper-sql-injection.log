@@ -1,0 +1,43 @@
+155. Repo: FidelityInternational/fly_wrapper
+	File: fly
+	URL: https://github.com/FidelityInternational/fly_wrapper/blob/5807ff6f2edb979d008b04823c81b985a72a1df0/fly
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+            if cookie.name == concourse_cookie:
+                auth_token = cookie.value.strip('"').split(' ')[1]
+                break
+    if not auth_token:
+        raise Exception(
+            "\x1b[31m Could not retrieve token {} from cookie\x1b[0m\ncurrent cookies: {}".format(
+                " or ".join(concourse_cookies), cookiejar
+            )
+        )
+    # Concourse truncated any cookies larger than 4000 bytes down to exactly 4000. Once you strip off the 'bearer ' part off the cookie, that leaves 3993 of truncated token.
+    # As the truncated cookie does not work, we now try a fallback technique to get the cookie directly from the HTML response that concourse sends.
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+            if cookie.name == concourse_cookie:
+                auth_token = cookie.value.strip('"').split(' ')[1]
+                break
+    if not auth_token:
+        raise Exception(
+            "\x1b[31m Could not retrieve token {} from cookie\x1b[0m\ncurrent cookies: {}".format(
+                " or ".join(concourse_cookies), cookiejar
+            )
+        )
+    # Concourse truncated any cookies larger than 4000 bytes down to exactly 4000. Once you strip off the 'bearer ' part off the cookie, that leaves 3993 of truncated token.
+    # As the truncated cookie does not work, we now try a fallback technique to get the cookie directly from the HTML response that concourse sends.
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

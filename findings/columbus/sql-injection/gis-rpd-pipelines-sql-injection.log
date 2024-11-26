@@ -1,0 +1,43 @@
+169. Repo: gis-rpd/pipelines
+	File: run
+	URL: https://github.com/gis-rpd/pipelines/blob/4964b9b4240db071ad1aa7c3fd1f752c94e10b53/run
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+disabled_pipelines = []
+if os.path.exists(disabled_pipeline_cfg):
+    with open(disabled_pipeline_cfg) as fh:
+        for line in fh:
+            disabled_pipelines.append(line.strip())
+#sys.stderr.write("DEBUG disabled = {}\n".format(disabled_pipelines))
+
+SCRIPTS = ['chromatin-profiling/atacseq/atacseq.py',
+           'chromatin-profiling/chipseq/chipseq.py',
+           'custom/SG10K/SG10K.py',
+           'germs/vipr/vipr.py',
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+disabled_pipelines = []
+if os.path.exists(disabled_pipeline_cfg):
+    with open(disabled_pipeline_cfg) as fh:
+        for line in fh:
+            disabled_pipelines.append(line.strip())
+#sys.stderr.write("DEBUG disabled = {}\n".format(disabled_pipelines))
+
+SCRIPTS = ['chromatin-profiling/atacseq/atacseq.py',
+           'chromatin-profiling/chipseq/chipseq.py',
+           'custom/SG10K/SG10K.py',
+           'germs/vipr/vipr.py',
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

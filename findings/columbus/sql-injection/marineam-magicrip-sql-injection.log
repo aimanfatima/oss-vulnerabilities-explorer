@@ -1,0 +1,23 @@
+292. Repo: marineam/magicrip
+	File: rip
+	URL: https://github.com/marineam/magicrip/blob/d3e04cd70c3ad7f00922651374b92e739364863b/rip
+	Vulnerable Pattern: % %
+	Attack Description: Using % string formatting in SQL queries can lead to SQL injection vulnerabilities.
+	Vulnerable Code Snippet:
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+			2. An attacker could inject malicious SQL commands where the `% %` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,42 @@
+13. Repo: firefoxbug/OpenCDN_Console
+	File: icmp
+	URL: https://github.com/firefoxbug/OpenCDN_Console/blob/4ba837c88ba567b3eae89fcc4eebe7d3714dc95a/icmp
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+pwd=os.popen('cat /usr/local/opencdn/conf/opencdn.conf | grep DB_PassWord | awk -F= \'{print $2}\'').read()
+db=MySQLdb.connect('127.0.0.1','root',pwd[:-1],'cdn_info')
+print 'Database connected.'
+cur=db.cursor()
+while 1:
+	cur.execute("select NodeIP from node_info;")
+	rows=cur.fetchall()
+	for i in range(0,len(rows)):
+		cmd='ping -W 3 -c 2 '+rows[i][0]
+		a=os.popen(cmd).read()
+		if (a.find("time=")!=-1):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+pwd=os.popen('cat /usr/local/opencdn/conf/opencdn.conf | grep DB_PassWord | awk -F= \'{print $2}\'').read()
+db=MySQLdb.connect('127.0.0.1','root',pwd[:-1],'cdn_info')
+print 'Database connected.'
+cur=db.cursor()
+while 1:
+	cur.execute("select NodeIP from node_info;")
+	rows=cur.fetchall()
+	for i in range(0,len(rows)):
+		cmd='ping -W 3 -c 2 '+rows[i][0]
+		a=os.popen(cmd).read()
+		if (a.find("time=")!=-1):
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

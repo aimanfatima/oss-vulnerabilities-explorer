@@ -1,0 +1,43 @@
+111. Repo: robert-hh/Micropython-Editor
+	File: pye
+	URL: https://github.com/robert-hh/Micropython-Editor/blob/5c605369fcd7ec47049ed264dc96f5946d1fc5cf/pye
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+        self.key_max = 0
+        for _ in Editor.KEYMAP.keys():
+            self.key_max = max(self.key_max, len(_))
+
+    def goto(self, row, col):
+        self.wr(Editor.TERMCMD[0].format(row=row + 1, col=col + 1))
+
+    def clear_to_eol(self):
+        self.wr(Editor.TERMCMD[1])
+
+    def cursor(self, onoff):
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+        self.key_max = 0
+        for _ in Editor.KEYMAP.keys():
+            self.key_max = max(self.key_max, len(_))
+
+    def goto(self, row, col):
+        self.wr(Editor.TERMCMD[0].format(row=row + 1, col=col + 1))
+
+    def clear_to_eol(self):
+        self.wr(Editor.TERMCMD[1])
+
+    def cursor(self, onoff):
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

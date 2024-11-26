@@ -1,0 +1,42 @@
+69. Repo: cygwin/scallywag
+	File: jobs
+	URL: https://github.com/cygwin/scallywag/blob/6b5cf753fe76141134ede493e3b80339336cf5ab/jobs
+	Vulnerable Pattern: execute(
+	Attack Description: Direct execution of SQL queries with string concatenation can lead to SQL injection.
+	Vulnerable Code Snippet:
+
+
+def lookup_id(id):
+    with contextlib.closing(sqlite3.connect(carpetbag.dbfile)) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.execute('SELECT * FROM jobs WHERE id = ?', (id,))
+        row = cursor.fetchone()
+
+    if not row:
+        sys.exit("job id {} not found".format(id))
+
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+
+
+def lookup_id(id):
+    with contextlib.closing(sqlite3.connect(carpetbag.dbfile)) as conn:
+        conn.row_factory = sqlite3.Row
+        cursor = conn.execute('SELECT * FROM jobs WHERE id = ?', (id,))
+        row = cursor.fetchone()
+
+    if not row:
+        sys.exit("job id {} not found".format(id))
+
+			2. An attacker could inject malicious SQL commands where the `execute(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_id = "123"
+
+    Malicious input that could expose all users:
+    user_id = "123 OR 1=1"
+
+    Resulting query:
+    SELECT * FROM users WHERE id = 123 OR 1=1
+    # This would return all users instead of just user 123
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.

@@ -1,0 +1,43 @@
+161. Repo: purarue/poly-project-euler
+	File: new
+	URL: https://github.com/purarue/poly-project-euler/blob/1be673904093c3e0ce39a9b2a2acb63517d7ad3e/new
+	Vulnerable Pattern: .format(
+	Attack Description: Using .format() for SQL queries can be vulnerable to SQL injection if user input is not properly sanitized.
+	Vulnerable Code Snippet:
+prob_number: int = int(input("Problem Number: "))
+
+# get language name from user
+language_name: str = input("Language Name (for folder)? ")
+
+new_dir_path: str = "{}-{}".format(str(prob_number).zfill(3), language_name)
+
+# confirm directory
+override: str = input(
+    "Hit enter to confirm '{}' or type in an alternative: ".format(
+        termcolor.colored(new_dir_path, "green")
+Step-by-Step Attack Scenario:
+			1. The vulnerable code is found in the following file:
+prob_number: int = int(input("Problem Number: "))
+
+# get language name from user
+language_name: str = input("Language Name (for folder)? ")
+
+new_dir_path: str = "{}-{}".format(str(prob_number).zfill(3), language_name)
+
+# confirm directory
+override: str = input(
+    "Hit enter to confirm '{}' or type in an alternative: ".format(
+        termcolor.colored(new_dir_path, "green")
+			2. An attacker could inject malicious SQL commands where the `.format(` pattern is used.
+			3. For example, an attacker might craft a payload like:
+Original intended input:
+    user_input = "valid_input"
+
+    Malicious input example:
+    user_input = "' OR '1'='1"
+
+    Resulting query transformation:
+    Original: SELECT * FROM table WHERE field = 'valid_input'
+    Malicious: SELECT * FROM table WHERE field = '' OR '1'='1'
+    # This would bypass authentication or return all records
+			4. When this malicious input is processed, the SQL query structure would be altered, potentially exposing or modifying sensitive data.
